@@ -2,7 +2,7 @@
 
 // ── SUPABASE ──────────────────────────────────────────────────
 const supabaseUrl = 'https://elffxqkhihilfmbnengx.supabase.co';
-const supabaseKey = 'sb_publishable_KcAegsmUshdHvwPJJoJMJg_fbOyAono';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZ4cWtoaWhpbGZtYm5lbmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MTYxNTMsImV4cCI6MjA5Mjk5MjE1M30.xXn9k752Qk3oIGqU1GkrgryXNxVOPPU9ECX2CbDMHhE';
 const db = supabase.createClient(supabaseUrl, supabaseKey);
 
 // ── MOOD DATA ─────────────────────────────────────────────────
