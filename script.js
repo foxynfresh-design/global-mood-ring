@@ -174,10 +174,22 @@ function drawStars(){ ctxS.clearRect(0,0,W,H); stars.forEach(s=>{ ctxS.beginPath
 function drawAll(){
     drawMap();
     ctxC.clearRect(0,0,W,H);
-    [{n:'Palermo',lat:38.12,lon:13.36}].forEach(c => {
-        const [px,py] = proj(c.lon, c.lat);
-        ctxC.beginPath(); ctxC.arc(px,py,5,0,Math.PI*2); ctxC.fillStyle='#5DDCB8'; ctxC.fill();
-    });
+    
+    // THE SPONSOR NODE (Your brand/Sicily)
+    const sicilyNode = {n:'Marsala', lat:37.80, lon:12.44};
+    const [px,py] = proj(sicilyNode.lon, sicilyNode.lat);
+    
+    ctxC.beginPath(); 
+    ctxC.arc(px,py,6,0,Math.PI*2); 
+    ctxC.fillStyle='#FFD700'; // Gold color
+    ctxC.fill();
+    ctxC.shadowBlur = 15;
+    ctxC.shadowColor = 'gold';
+    
+    // Label for the sponsor
+    ctxC.fillStyle = "white";
+    ctxC.font = "10px Bebas Neue";
+    ctxC.fillText("FEATURED: MARSALA", px + 10, py + 3);
 }
 
 function drawMap(){
