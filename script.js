@@ -110,11 +110,30 @@ cM.addEventListener('mousedown', e => { dragging=true; dx=e.clientX; dy=e.client
 window.addEventListener('mousemove', e => { if(dragging){ tx = dtx + (e.clientX - dx); ty = dty + (e.clientY - dy); drawAll(); } });
 window.addEventListener('mouseup', () => dragging=false);
 
-function resize(){
-    W=window.innerWidth; H=window.innerHeight;
-    [cS,cM,cC].forEach(c => { c.width=W*DPR; c.height=H*DPR; c.style.width=W+'px'; c.style.height=H+'px'; c.getContext('2d').scale(DPR,DPR); });
-    mkStars(); drawAll();
+function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    const canvases = [cS, cM, cC];
+    
+    canvases.forEach(c => {
+        if (c) {
+            // Force the internal resolution to match the screen
+            c.width = W * DPR;
+            c.height = H * DPR;
+            // Force the visual size to match the screen
+            c.style.width = W + 'px';
+            c.style.height = H + 'px';
+            
+            const ctx = c.getContext('2d');
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any previous scaling
+            ctx.scale(DPR, DPR);
+        }
+    });
+    
+    mkStars();
+    drawAll();
 }
+
 function mkStars(){ stars=[]; for(let i=0;i<100;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random(),a:Math.random()}); }
 function drawStars(){ ctxS.clearRect(0,0,W,H); stars.forEach(s=>{ ctxS.beginPath(); ctxS.arc(s.x,s.y,s.r,0,Math.PI*2); ctxS.fillStyle=`rgba(255,255,255,${s.a})`; ctxS.fill(); }); }
 
