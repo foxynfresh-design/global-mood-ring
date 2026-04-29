@@ -1,87 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Mood Ring</title>
-    <link rel="stylesheet" href__="style.css">
-    <link href__="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@1,300;1,400;1,600&family=Tenor+Sans&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Mood Ring</title>
+  <link rel="stylesheet" href__="style.css">
+  <link href__="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
+<!-- LOADER -->
 <div id="loader">
-    <div id="ld-title">GLOBAL MOOD RING</div>
-    <div id="ld-sub">Loading Earth's Pulse</div>
-    <div id="ld-track"><div id="ld-bar"></div></div>
+  <div id="ld-title">GLOBAL MOOD RING</div>
+  <div id="ld-sub">Tuning into Earth's Frequency</div>
+  <div id="ld-track"><div id="ld-bar"></div></div>
 </div>
 
+<!-- GLOBE CANVAS -->
+<div id="globe-wrap"></div>
+
+<!-- STARS CANVAS -->
 <canvas id="c-stars"></canvas>
-<canvas id="c-map"></canvas>
-<canvas id="c-cities"></canvas>
 
-<div id="tip">
-    <div id="tip-name"></div>
-    <div id="tip-pulse"></div>
-</div>
+<!-- TOOLTIP -->
+<div id="tip"><div id="tip-name"></div><div id="tip-pulse"></div></div>
 
+<!-- TOP LEFT LOGO -->
 <div class="ui" id="logo">
-    <span class="l">GLOBAL</span>
-    <span class="l mood" id="logo-mood">MOOD</span>
-    <span class="l">RING</span>
-    <sub>Emotional Pulse of Earth</sub>
+  <span class="l">GLOBAL</span>
+  <span class="l mood" id="logo-mood">MOOD</span>
+  <span class="l">RING</span>
+  <sub>Emotional Pulse of Earth</sub>
 </div>
 
+<!-- TOP RIGHT STATUS -->
 <div class="ui" id="tr">
-    <div class="chip">
-        <div class="live-dot"></div>
-        Signals: <span id="feed-cnt" style="margin-left:5px; color:var(--mc)">0</span>
-    </div>
-    <div class="chip" id="zoom-chip">1.0×</div>
+  <div class="chip"><div class="live-dot"></div>Signals: <span id="feed-cnt" style="margin-left:5px;color:var(--mc)">0</span></div>
+  <div class="chip" id="mood-chip">CALM</div>
 </div>
 
-<div class="ui" id="left">
-    <div class="reg on" onclick="setRegion(this,'all')">All Regions</div>
-    <div class="reg" onclick="setRegion(this,'eu')">Europe</div>
-    <div class="reg" onclick="setRegion(this,'it')">Sicily</div>
-</div>
-
+<!-- LIVE FEED -->
 <div class="ui" id="feed-wrap">
-    <div id="feed-hd">Live Signal</div>
-    <div id="feed-list"></div>
+  <div id="feed-hd">Live Signal</div>
+  <div id="feed-list"></div>
 </div>
 
+<!-- BOTTOM LEFT BIG MOOD -->
 <div class="ui" id="bl">
-    <div id="big-mood">CALM</div>
-    <div id="poetic">The world holds its breath between heartbeats...</div>
+  <div id="big-mood">CALM</div>
+  <div id="poetic">The world holds its breath between heartbeats...</div>
 </div>
 
+<!-- BOTTOM RIGHT BARS + SOUND -->
 <div class="ui" id="br">
-    <div id="bars-hd">Mood Distribution</div>
-    <div id="bars"></div>
-    <button id="snd-btn" onclick="toggleAudio()">
-        <div class="sdot"></div><span id="snd-lbl">Enable Soundscape</span>
-    </button>
+  <div id="bars-hd">Mood Distribution</div>
+  <div id="bars"></div>
+  <button id="snd-btn" onclick="toggleAudio()">
+    <div class="sdot"></div><span id="snd-lbl">Enable Soundscape</span>
+  </button>
 </div>
 
+<!-- INPUT BAR -->
 <div class="ui" id="input-bar">
-    <div id="irow">
-        <input id="mood-in" type="text" placeholder="ONE WORD" maxlength="28" autocomplete="off">
-        <button id="send-btn" onclick="submitMood()">SEND</button>
-    </div>
+  <div id="irow">
+    <input id="mood-in" type="text" placeholder="TYPE ONE WORD..." maxlength="28" autocomplete="off" onkeydown="if(event.key==='Enter') submitMood()">
+    <button id="send-btn" onclick="submitMood()">SEND</button>
+  </div>
+  <div id="input-hint">Express how the world feels right now</div>
 </div>
 
+<!-- OVERLAY / SHARE -->
 <div id="overlay">
-    <div id="capture-area">
-        <div id="ov-mood">JOY</div>
-        <div id="ov-sub">Your Emotional Signature</div>
-        <div id="ov-ref"></div>
-    </div>
-    <div style="display:flex; gap:10px; margin-top:30px;">
-        <button class="ov-btn main" onclick="shareMood()">DOWNLOAD AURA</button>
-        <button class="ov-btn" onclick="closeOverlay()">CLOSE</button>
-    </div>
+  <div id="capture-area">
+    <div id="ov-title">GLOBAL MOOD RING</div>
+    <div id="ov-word"></div>
+    <div id="ov-mood">JOY</div>
+    <div id="ov-sub">Your Emotional Signature</div>
+    <div id="ov-city"></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:30px;">
+    <button class="ov-btn main" onclick="shareMood()">DOWNLOAD AURA</button>
+    <button class="ov-btn" onclick="closeOverlay()">CLOSE</button>
+  </div>
 </div>
 
 <script src="script.js"></script>
