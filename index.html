@@ -1,97 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Mood Ring</title>
-    
-    <style>
-        body { background: #020810 !important; margin: 0; overflow: hidden; }
-        canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
-        #loader { position: fixed; inset: 0; z-index: 999; background: #020810; display: flex; align-items: center; justify-content: center; color: white; font-family: sans-serif; }
-    </style>
-
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@1,300;1,400;1,600&family=Tenor+Sans&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Global Mood Ring</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@1,300;1,400;1,600&family=Tenor+Sans&display=swap" rel="stylesheet">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- html2canvas for aura download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
-<div id="loader">
+  <!-- ── LOADER ── -->
+  <div id="loader">
     <div id="ld-title">GLOBAL MOOD RING</div>
     <div id="ld-sub">Loading Earth's Pulse</div>
     <div id="ld-track"><div id="ld-bar"></div></div>
-</div>
+  </div>
 
-<canvas id="c-stars"></canvas>
-<canvas id="c-map"></canvas>
-<canvas id="c-cities"></canvas>
+  <!-- ── CANVAS LAYERS ── -->
+  <canvas id="c-stars"></canvas>
+  <canvas id="c-map"></canvas>
+  <canvas id="c-cities"></canvas>
+  <canvas id="c-fx"></canvas>
 
-<div id="tip">
+  <!-- ── ATMOSPHERE ── -->
+  <div id="aurora"></div>
+  <div id="vignette"></div>
+  <div id="rim"></div>
+
+  <!-- ── TOOLTIP ── -->
+  <div id="tip">
     <div id="tip-name"></div>
+    <div id="tip-mood"></div>
+    <div id="tip-kw"></div>
     <div id="tip-pulse"></div>
-</div>
+  </div>
 
-<div class="ui" id="logo">
+  <!-- ── LOGO ── -->
+  <div class="ui" id="logo">
     <span class="l">GLOBAL</span>
     <span class="l mood" id="logo-mood">MOOD</span>
     <span class="l">RING</span>
     <sub>Emotional Pulse of Earth</sub>
-</div>
+  </div>
 
-<div class="ui" id="tr">
+  <!-- ── BREADCRUMB ── -->
+  <div class="ui" id="bc">
+    <span id="bc-world" onclick="resetView()">World</span>
+  </div>
+
+  <!-- ── TOP RIGHT ── -->
+  <div class="ui" id="tr">
     <div class="chip">
-        <div class="live-dot"></div>
-        Signals: <span id="feed-cnt" style="margin-left:5px; color:var(--mc)">0</span>
+      <div class="live-dot"></div>
+      Signals: <span id="feed-cnt" style="margin-left:5px;color:var(--mc)">0</span>
     </div>
     <div class="chip" id="zoom-chip">1.0×</div>
-</div>
+  </div>
 
-<div class="ui" id="left">
-    <div class="reg on" onclick="setRegion(this,'all')">All Regions</div>
-    <div class="reg" onclick="setRegion(this,'eu')">Europe</div>
-    <div class="reg" onclick="setRegion(this,'it')">Sicily</div>
-</div>
+  <!-- ── REGION FILTERS ── -->
+  <div class="ui" id="left">
+    <div class="reg on" data-r="all" onclick="setRegion(this,'all')">All Regions</div>
+    <div class="reg" data-r="eu"  onclick="setRegion(this,'eu')">Europe</div>
+    <div class="reg" data-r="am"  onclick="setRegion(this,'am')">Americas</div>
+    <div class="reg" data-r="as"  onclick="setRegion(this,'as')">Asia · Pacific</div>
+    <div class="reg" data-r="af"  onclick="setRegion(this,'af')">Africa</div>
+  </div>
 
-<div class="ui" id="feed-wrap">
-    <div id="feed-hd">Live Signal</div>
+  <!-- ── LIVE FEED ── -->
+  <div class="ui" id="feed-wrap">
+    <div id="feed-hd">
+      <span>Live Signal</span>
+      <span id="feed-cnt-right">0</span>
+    </div>
     <div id="feed-list"></div>
-</div>
+  </div>
 
-<div class="ui" id="bl">
+  <!-- ── BOTTOM LEFT ── -->
+  <div class="ui" id="bl">
     <div id="big-mood">CALM</div>
-    <div id="poetic">The world holds its breath between heartbeats...</div>
-</div>
+    <div id="poetic">The world holds its breath between heartbeats,<br>silence gilded with the weight of what comes next.</div>
+  </div>
 
-<div class="ui" id="br">
+  <!-- ── BOTTOM RIGHT ── -->
+  <div class="ui" id="br">
     <div id="bars-hd">Mood Distribution</div>
     <div id="bars"></div>
     <button id="snd-btn" onclick="toggleAudio()">
-        <div class="sdot"></div><span id="snd-lbl">Enable Soundscape</span>
+      <div class="sdot"></div>
+      <span id="snd-lbl">Enable Soundscape</span>
     </button>
-</div>
+  </div>
 
-<div class="ui" id="input-bar">
+  <!-- ── INPUT BAR ── -->
+  <div class="ui" id="input-bar">
+    <div id="ilabel">How are you feeling?</div>
     <div id="irow">
-        <input id="mood-in" type="text" placeholder="ONE WORD" maxlength="28" autocomplete="off">
-        <button id="send-btn" onclick="submitMood()">SEND</button>
+      <input id="mood-in" type="text" placeholder="ONE WORD" maxlength="28" autocomplete="off" spellcheck="false">
+      <button id="send-btn" onclick="submitMood()">SEND</button>
     </div>
-</div>
+  </div>
 
-<div id="overlay">
+  <!-- ── ZOOM CONTROLS ── -->
+  <div class="ui" id="zoom-ctrl">
+    <button class="zb" onclick="zoomBy(1.45)">+</button>
+    <button class="zb" onclick="zoomBy(0.69)">−</button>
+    <button class="zb" onclick="resetView()">⌂</button>
+  </div>
+
+  <!-- ── OVERLAY ── -->
+  <div id="overlay">
     <div id="capture-area">
-        <div id="ov-mood">JOY</div>
-        <div id="ov-sub">Your Emotional Signature</div>
-        <div id="ov-ref"></div>
+      <div id="ov-label">YOUR EMOTIONAL SIGNATURE</div>
+      <div id="ov-mood">JOY</div>
+      <div id="ov-ref"></div>
+      <div id="ov-wait"></div>
     </div>
-    <div style="display:flex; gap:10px; margin-top:30px;">
-        <button class="ov-btn main" onclick="shareMood()">DOWNLOAD AURA</button>
-        <button class="ov-btn" onclick="closeOverlay()">CLOSE</button>
+    <div id="ov-actions">
+      <button class="ov-btn main" onclick="shareMood()">DOWNLOAD AURA</button>
+      <button class="ov-btn" onclick="closeOverlay()">CLOSE · ESC</button>
     </div>
-</div>
+  </div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
