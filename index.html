@@ -22,7 +22,6 @@
 
 <div id="globe-wrap"></div>
 <canvas id="c-stars"></canvas>
-<div id="tip"><div id="tip-name"></div><div id="tip-pulse"></div></div>
 
 <div class="ui" id="logo">
   <span class="l">GLOBAL</span>
@@ -56,7 +55,7 @@
 
 <div class="ui" id="input-bar">
   <div id="irow">
-    <input id="mood-in" type="text" placeholder="TYPE ONE WORD..." maxlength="28" oninput="handleTyping(this.value)" onkeydown="if(event.key==='Enter') submitMood()">
+    <input id="mood-in" type="text" placeholder="ONE WORD" maxlength="28" oninput="handleTyping(this.value)">
     <button id="send-btn" onclick="submitMood()">SEND</button>
   </div>
 </div>
@@ -69,7 +68,7 @@
     <div id="ov-city"></div>
   </div>
   <div style="display:flex;gap:10px;margin-top:30px;">
-    <button class="ov-btn main" onclick="shareMood()">DOWNLOAD AURA</button>
+    <button class="ov-btn main" onclick="shareMood()">DOWNLOAD</button>
     <button class="ov-btn" onclick="closeOverlay()">CLOSE</button>
   </div>
 </div>
