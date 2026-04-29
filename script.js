@@ -226,3 +226,31 @@ async function boot(){
 }
 
 boot();
+
+// ═══════════════════════════════════════
+// LIVE TICKER LOGIC
+// ═══════════════════════════════════════
+function addFeed() {
+    const list = document.getElementById('feed-list');
+    if (!list) return;
+
+    const moods = Object.keys(M);
+    const randomMood = moods[Math.floor(Math.random() * moods.length)];
+    const words = ["Radiant", "Still", "Rising", "Tender", "Ache", "Surge"]; // Example variety
+    const word = words[Math.floor(Math.random() * words.length)];
+    
+    const fi = document.createElement('div');
+    fi.className = 'fi'; // This matches the CSS animation in style.css
+    fi.style.borderLeft = `2px solid ${M[randomMood].h}`;
+    fi.innerHTML = `<div class="fi-w">${word.toUpperCase()}</div><div class="fi-c">${userCity}</div>`;
+    
+    list.insertBefore(fi, list.firstChild);
+    if (list.children.length > 5) list.removeChild(list.lastChild);
+    
+    // Increment the counter in the top right
+    const cnt = document.getElementById('feed-cnt');
+    if (cnt) cnt.textContent = parseInt(cnt.textContent) + 1;
+}
+
+// Start the ticker after the page loads
+setInterval(addFeed, 4000);
