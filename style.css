@@ -11,7 +11,7 @@ body {
 }
 canvas { position: fixed; inset: 0; display: block; }
 #c-stars { z-index: 1; pointer-events: none; }
-#globe-wrap { position: fixed; inset: 0; z-index: 2; }
+#globe-wrap { position: fixed; inset: 0; z-index: 2; cursor: grab; }
 
 .ui { position: fixed; z-index: 50; pointer-events: none; }
 .ui * { pointer-events: auto; }
@@ -21,13 +21,13 @@ canvas { position: fixed; inset: 0; display: block; }
 #logo .mood { color: var(--mc); text-shadow: 0 0 30px var(--mg); }
 
 #tr { top: 30px; right: 30px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.chip { background: var(--glass); border: 1px solid var(--border); padding: 6px 12px; font-size: 9px; text-transform: uppercase; }
+.chip { background: var(--glass); border: 1px solid var(--border); padding: 6px 12px; font-size: 9px; text-transform: uppercase; border-radius: 2px; }
 
 #feed-wrap { top: 100px; right: 20px; width: 180px; }
 .fi { background: rgba(255,255,255,0.03); border-left: 2px solid var(--mc); padding: 8px; margin-bottom: 6px; }
 
 #bl { bottom: 120px; left: 30px; }
-#big-mood { font-family: 'Bebas Neue'; font-size: 80px; color: var(--mc); line-height: 0.8; }
+#big-mood { font-family: 'Bebas Neue'; font-size: 80px; color: var(--mc); line-height: 0.8; transition: 0.5s; }
 
 #br { bottom: 120px; right: 30px; width: 200px; }
 .bar-row { margin-bottom: 8px; }
@@ -37,13 +37,14 @@ canvas { position: fixed; inset: 0; display: block; }
 #input-bar { bottom: 30px; left: 50%; transform: translateX(-50%); }
 #irow { display: flex; background: rgba(3,10,24,0.8); border: 1px solid var(--border); }
 #mood-in { background: none; border: none; padding: 12px; font-family: 'Bebas Neue'; font-size: 20px; color: white; width: 240px; text-align: center; outline: none; }
-#send-btn { background: var(--mc); border: none; padding: 0 20px; font-family: 'Bebas Neue'; cursor: pointer; transition: background 0.5s; }
+#send-btn { background: var(--mc); border: none; padding: 0 20px; font-family: 'Bebas Neue'; cursor: pointer; transition: 0.3s; }
 
 #loader { position: fixed; inset: 0; z-index: 500; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s; }
 #loader.fade { opacity: 0; pointer-events: none; }
 #ld-bar { height: 100%; background: var(--mc); width: 0%; transition: 0.6s; }
-#ld-track { width: 150px; height: 1px; background: rgba(255,255,255,0.1); margin-top: 20px; }
 
-#overlay { position: fixed; inset: 0; z-index: 400; background: rgba(2,8,16,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.5s; }
+#overlay { position: fixed; inset: 0; z-index: 400; background: rgba(2,8,16,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.5s; backdrop-filter: blur(10px); }
 #overlay.on { opacity: 1; pointer-events: auto; }
-#capture-area { background: #020810; padding: 40px; text-align: center; border: 1px solid var(--mc); }
+#capture-area { background: #020810; padding: 40px; text-align: center; border: 1px solid var(--mc); width: 350px; }
+.ov-btn { background: none; border: 1px solid var(--border); color: white; padding: 10px 20px; font-family: 'Bebas Neue'; cursor: pointer; }
+.ov-btn.main { background: var(--mc); color: black; border: none; }
