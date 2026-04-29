@@ -17,10 +17,10 @@ function initGlobe() {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Optimized Bloom (Fixed "Too Bright" Issue)
+    // Cinematic Bloom
     const renderPass = new THREE.RenderPass(scene, camera);
     const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.4, 0.85);
-    bloomPass.threshold = 0.2; // Higher threshold prevents the whole planet from glowing
+    bloomPass.threshold = 0.2;
     bloomPass.strength = 0.8;
     bloomPass.radius = 1;
 
@@ -33,28 +33,41 @@ function initGlobe() {
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.25;
 
-    const loader = new THREE.TextureLoader();
-    const dayTex = loader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
-    const bumpTex = loader.load('https://unpkg.com/three-globe/example/img/earth-topology.png');
-    const cloudTex = loader.load('https://unpkg.com/three-globe/example/img/earth-clouds.png');
+    // --- ROBUST ASSET LOADING ---
+    const manager = new THREE.LoadingManager();
+    manager.onLoad = () => {
+        console.log("All assets loaded successfully.");
+        document.getElementById('loader').classList.add('fade-out');
+    };
+    manager.onError = (url) => {
+        console.warn("Skipping failed texture:", url);
+        // We trigger manual loader exit if a critical texture fails so app doesn't hang
+        document.getElementById('loader').classList.add('fade-out');
+    };
+
+    const loader = new THREE.TextureLoader(manager);
+    // Setting CrossOrigin explicitly to prevent the CORS errors seen in console
+    loader.setCrossOrigin('anonymous'); 
+
+    // Updated URLS to a more stable repository
+    const dayTex = loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+    const cloudTex = loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png');
 
     // Earth
     globeMesh = new THREE.Mesh(
         new THREE.SphereGeometry(1, 128, 128),
-        new THREE.MeshStandardMaterial({ map: dayTex, bumpMap: bumpTex, bumpScale: 0.05, roughness: 0.8 })
+        new THREE.MeshStandardMaterial({ map: dayTex, roughness: 0.9 })
     );
     scene.add(globeMesh);
 
     // Clouds
     cloudMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1.02, 128, 128),
+        new THREE.SphereGeometry(1.015, 128, 128),
         new THREE.MeshPhongMaterial({ map: cloudTex, transparent: true, opacity: 0.3 })
     );
     scene.add(cloudMesh);
 
-    // Lighting (Controlled)
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambient);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const sun = new THREE.DirectionalLight(0xffffff, 1);
     sun.position.set(5, 3, 5);
     scene.add(sun);
@@ -78,7 +91,6 @@ function animate() {
     composer.render();
 }
 
-/* ── DATA LOGIC ── */
 async function loadHistory() {
     const { data } = await db.from('mood_signals').select('*').order('id', { ascending: false }).limit(6);
     if (data) data.reverse().forEach(s => addTickerItem(s));
@@ -95,7 +107,7 @@ function addTickerItem(s) {
     const list = document.getElementById('ticker-list');
     const li = document.createElement('li');
     li.className = 'ticker-item';
-    li.textContent = `${s.word.toUpperCase()} · ${s.city || 'EARTH'}`;
+    li.textContent = `${(s.word || 'MOOD').toUpperCase()} · ${(s.city || 'EARTH').toUpperCase()}`;
     list.prepend(li);
     if (list.children.length > 6) list.lastChild.remove();
 }
@@ -119,7 +131,7 @@ window.submitMood = async function() {
     if (!word) return;
 
     document.getElementById('aura-word').textContent = word.toUpperCase();
-    document.getElementById('aura-loc').textContent = userCity;
+    document.getElementById('aura-loc').textContent = userCity.toUpperCase();
     document.getElementById('aura-overlay').classList.remove('hidden');
 
     await db.from('mood_signals').insert([{ word, city: userCity, lat: userLat, lng: userLng }]);
@@ -136,8 +148,10 @@ window.addEventListener('DOMContentLoaded', () => {
     
     fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
         userCity = d.city || userCity; userLat = d.latitude || userLat; userLng = d.longitude || userLng;
-    }).finally(() => {
-        setTimeout(() => document.getElementById('loader').classList.add('fade-out'), 1000);
+    }).catch(() => console.log("CORS block: Using Aliso Viejo coordinates."))
+    .finally(() => {
+        // Fallback loader exit in case the manager fails
+        setTimeout(() => document.getElementById('loader').classList.add('fade-out'), 2000);
     });
 });
 })();
