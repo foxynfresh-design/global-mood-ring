@@ -12,7 +12,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-
 #globe-canvas { position: absolute; inset: 0; z-index: 1; }
 .hidden { display: none !important; }
 
-/* UI Elements */
 #header { position: absolute; top: 0; width: 100%; padding: 24px; display: flex; justify-content: space-between; z-index: 10; pointer-events: none; }
 #header * { pointer-events: auto; }
 .logo-title { font-family: 'Cinzel', serif; letter-spacing: 0.2em; font-size: 1.2rem; }
@@ -20,37 +19,23 @@ body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-
 .glass-panel { background: var(--glass); border: 1px solid var(--border); backdrop-filter: blur(20px); border-radius: 16px; padding: 20px; }
 .panel-title { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.1em; margin-bottom: 12px; opacity: 0.6; }
 
-#ticker-panel { position: absolute; top: 80px; right: 24px; width: 240px; z-index: 10; max-height: 300px; overflow-y: hidden; }
+#ticker-panel { position: absolute; top: 80px; right: 24px; width: 240px; z-index: 10; max-height: 300px; }
 #ticker-list { list-style: none; font-size: 0.85rem; }
-.ticker-item { 
-    margin-bottom: 8px; 
-    border-left: 2px solid var(--accent); 
-    padding-left: 10px; 
-    opacity: 0; 
-    transform: translateX(10px);
-    animation: slideIn 0.5s forwards; /* New entry animation */
-}
-
-@keyframes slideIn {
-    to { opacity: 1; transform: translateX(0); }
-} { margin-bottom: 8px; border-left: 2px solid var(--accent); padding-left: 10px; opacity: 0.9; }
+.ticker-item { margin-bottom: 8px; border-left: 2px solid var(--accent); padding-left: 10px; opacity: 0; transform: translateX(10px); animation: slideIn 0.5s forwards; }
 
 #dist-panel { position: absolute; bottom: 120px; right: 24px; width: 240px; z-index: 10; }
-.dist-row { margin-bottom: 8px; font-size: 0.75rem; }
-.dist-track { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
-.dist-fill { height: 100%; background: var(--accent); transition: width 1s ease; }
-
 #input-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 440px; z-index: 10; }
 .input-row { display: flex; gap: 10px; margin-top: 10px; }
 input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 14px; color: white; border-radius: 10px; outline: none; }
 #btn-send { background: var(--accent); border: none; padding: 0 24px; border-radius: 10px; font-weight: bold; cursor: pointer; color: #030610; }
 
-/* Aura Card */
 #aura-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; }
+#aura-card { width: 420px; text-align: center; position: relative; }
 #aura-word { font-family: 'Cinzel', serif; font-size: 3.5rem; color: var(--accent); margin: 10px 0; }
 .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; }
 
-/* Loader */
+@keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+
 #loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
 #loader.fade-out { opacity: 0; pointer-events: none; }
 .loader-orb { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 30px var(--accent); animation: pulse 2s infinite; }
