@@ -1,62 +1,37 @@
 :root {
-  --bg: #030610;
+  --bg: #01030a;
   --accent: #4af0c8;
-  --text: #eaf0ff;
-  --glass: rgba(7, 12, 32, 0.85);
-  --border: rgba(120, 180, 255, 0.15);
+  --glass: rgba(5, 10, 25, 0.8);
+  --border: rgba(255, 255, 255, 0.1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; overflow: hidden; height: 100vh; }
+body { background: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; overflow: hidden; }
 
-#globe-canvas { position: absolute; inset: 0; z-index: 1; }
+#globe-canvas { position: absolute; inset: 0; }
 .hidden { display: none !important; }
 
-#header { position: absolute; top: 0; width: 100%; padding: 24px; display: flex; justify-content: space-between; z-index: 10; pointer-events: none; }
+#header { position: absolute; top: 0; width: 100%; padding: 30px; display: flex; justify-content: space-between; z-index: 10; pointer-events: none; }
 #header * { pointer-events: auto; }
-.logo-title { font-family: 'Cinzel', serif; letter-spacing: 0.2em; font-size: 1.2rem; }
+.logo-title { font-family: 'Cinzel', serif; letter-spacing: 0.3em; font-size: 1rem; }
 
-.glass-panel { background: var(--glass); border: 1px solid var(--border); backdrop-filter: blur(20px); border-radius: 16px; padding: 20px; }
-.panel-title { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.1em; margin-bottom: 12px; opacity: 0.6; }
+.glass-panel { background: var(--glass); border: 1px solid var(--border); backdrop-filter: blur(15px); border-radius: 12px; padding: 20px; }
 
-#ticker-panel { position: absolute; top: 80px; right: 24px; width: 240px; z-index: 10; max-height: 300px; }
-#ticker-list { list-style: none; font-size: 0.85rem; }
-.ticker-item { margin-bottom: 8px; border-left: 2px solid var(--accent); padding-left: 10px; opacity: 0; transform: translateX(10px); animation: slideIn 0.5s forwards; }
+#ticker-panel { position: absolute; top: 100px; right: 30px; width: 240px; z-index: 10; }
+#ticker-list { list-style: none; font-size: 0.8rem; }
+.ticker-item { margin-bottom: 10px; border-left: 2px solid var(--accent); padding-left: 10px; animation: slideIn 0.5s forwards; }
 
-#dist-panel { position: absolute; bottom: 120px; right: 24px; width: 240px; z-index: 10; }
 #input-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 440px; z-index: 10; }
-.input-row { display: flex; gap: 10px; margin-top: 10px; }
-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 14px; color: white; border-radius: 10px; outline: none; }
-#btn-send { background: var(--accent); border: none; padding: 0 24px; border-radius: 10px; font-weight: bold; cursor: pointer; color: #030610; }
+.input-row { display: flex; gap: 10px; }
+input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 14px; color: white; border-radius: 8px; outline: none; }
+#btn-send { background: var(--accent); border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #000; }
 
-#aura-overlay {
-  position: fixed;
-  bottom: 30px;
-  left: 30px; /* Moved to corner */
-  width: 320px;
-  z-index: 100;
-  pointer-events: auto;
-}
+#aura-overlay { position: fixed; bottom: 120px; left: 30px; width: 300px; z-index: 100; }
+#aura-word { font-family: 'Cinzel', serif; font-size: 2rem; color: var(--accent); margin-top: 5px; }
 
-#aura-card {
-  padding: 20px;
-  text-align: left;
-  border-left: 4px solid var(--accent);
-}
+@keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-#aura-word { font-size: 2rem; margin: 5px 0; }
-
-@keyframes ripple {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(4); opacity: 0; }
-}
-.close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; }
-
-@keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
-
-#loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
+#loader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 1s; }
 #loader.fade-out { opacity: 0; pointer-events: none; }
 .loader-orb { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 30px var(--accent); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
-
-
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
