@@ -18,6 +18,7 @@ let actx=null, mGain=null;
 let drones=[];
 let audioOn=false;
 
+// 3. MOOD DEFINITIONS
 const M = {
     joy: {h:'#F7C948',g:'rgba(247,201,72,0.4)', note:261.63},
     love: {h:'#FF6B8A',g:'rgba(255,107,138,0.4)', note:293.66},
@@ -32,31 +33,17 @@ const M = {
 };
 
 const FB = {
-    joy:'The light you carry turns every room into a sunrise.',
-    love:'To love is to agree to be undone, again and again.',
-    hope:'Hope is a decision made in the dark before dawn.',
-    calm:'There is a frequency the world cannot reach when you are still.',
-    sad:'Grief is just love with nowhere left to go.',
-    anxious:'Every storm has a center, and you are in it.',
-    angry:'Something in you still believes it matters.',
-    numb:'Numbness is the body saying it has held too much.',
-    excited:'You are vibrating at a frequency the world hasn\'t calibrated for yet.',
-    grateful:'Gratitude is the only prayer that already contains its answer.'
+    joy: "The light you carry turns every room into a sunrise.",
+    love: "To love is to agree to be undone, again and again.",
+    hope: "Hope is a decision made in the dark before dawn.",
+    calm: "There is a frequency the world cannot reach when you are still.",
+    sad: "Grief is just love with nowhere left to go.",
+    anxious: "Every storm has a center, and you are in it.",
+    angry: "Something in you still believes it matters.",
+    numb: "Numbness is the body saying it has held too much.",
+    excited: "You are vibrating at a frequency the world hasn't calibrated for yet.",
+    grateful: "Gratitude is the only prayer that already contains its answer."
 };
-
-// 3. CANVAS ELEMENTS
-const cS=document.getElementById('c-stars'), cM=document.getElementById('c-map'), cC=document.getElementById('c-cities');
-const ctxS=cS.getContext('2d'), ctxM=cM.getContext('2d'), ctxC=cC.getContext('2d');
-const BW=960, BH=500;
-
-function proj(lon,lat){
-    lat=Math.max(-85,Math.min(85,lat));
-    const x=(lon+180)/360*BW*(W/BW)*sc+tx;
-    const sinL=Math.sin(lat*Math.PI/180);
-    const mercN=Math.log((1+sinL)/(1-sinL))/2;
-    const y=(Math.PI-mercN)/(2*Math.PI)*BH*(H/BH)*sc+ty;
-    return[x,y];
-}
 
 // 4. AUDIO (The Soundscape)
 function initAudio(){
