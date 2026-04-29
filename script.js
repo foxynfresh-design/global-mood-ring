@@ -11,14 +11,13 @@ let W=0, H=0, DPR=window.devicePixelRatio||1;
 let tx=0, ty=0, sc=1;
 const SMIN=0.5, SMAX=22;
 let dragging=false, dx=0, dy=0, dtx=0, dty=0;
-let curMood='calm';
 let geoFeatures=[];
 let stars=[];
 let actx=null, mGain=null;
 let drones=[];
 let audioOn=false;
+let curMood = 'calm';
 
-// 3. MOOD DEFINITIONS
 const M = {
     joy: {h:'#F7C948',g:'rgba(247,201,72,0.4)', note:261.63},
     love: {h:'#FF6B8A',g:'rgba(255,107,138,0.4)', note:293.66},
@@ -45,7 +44,20 @@ const FB = {
     grateful: "Gratitude is the only prayer that already contains its answer."
 };
 
-// 4. AUDIO (The Soundscape)
+const cS=document.getElementById('c-stars'), cM=document.getElementById('c-map'), cC=document.getElementById('c-cities');
+const ctxS=cS.getContext('2d'), ctxM=cM.getContext('2d'), ctxC=cC.getContext('2d');
+const BW=960, BH=500;
+
+function proj(lon,lat){
+    lat=Math.max(-85,Math.min(85,lat));
+    const x=(lon+180)/360*BW*(W/BW)*sc+tx;
+    const sinL=Math.sin(lat*Math.PI/180);
+    const mercN=Math.log((1+sinL)/(1-sinL))/2;
+    const y=(Math.PI-mercN)/(2*Math.PI)*BH*(H/BH)*sc+ty;
+    return[x,y];
+}
+
+// 3. AUDIO ENGINE
 function initAudio(){
     if(actx) return;
     actx = new (window.AudioContext || window.webkitAudioContext)();
@@ -72,47 +84,64 @@ function startDrone(mood){
     });
 }
 
-// 5. GLOBAL FUNCTIONS
+// 4. TICKER LOGIC
+function addFeed() {
+    const list = document.getElementById('feed-list');
+    if (!list) return;
+    const moods = Object.keys(M);
+    const randomMood = moods[Math.floor(Math.random() * moods.length)];
+    const words = ["Radiant", "Still", "Rising", "Tender", "Ache", "Surge", "Peace", "Awake"];
+    const word = words[Math.floor(Math.random() * words.length)];
+    const fi = document.createElement('div');
+    fi.className = 'fi'; 
+    fi.style.borderLeft = `2px solid ${M[randomMood].h}`;
+    fi.style.padding = "8px 12px";
+    fi.style.background = "rgba(255,255,255,0.03)";
+    fi.style.marginBottom = "4px";
+    fi.innerHTML = `<div style="font-family:'Bebas Neue'; font-size:16px; color:#fff">${word.toUpperCase()}</div><div style="font-size:9px; color:rgba(255,255,255,0.4)">${userCity}</div>`;
+    list.insertBefore(fi, list.firstChild);
+    if (list.children.length > 5) list.removeChild(list.lastChild);
+    const cnt = document.getElementById('feed-cnt');
+    if (cnt) cnt.textContent = parseInt(cnt.textContent) + 1;
+}
+
+// 5. WINDOW FUNCTIONS
 window.toggleAudio = () => {
     if(!actx) initAudio();
     audioOn = !audioOn;
     if(audioOn){
         actx.resume();
-        mGain.gain.setTargetAtTime(0.6, actx.currentTime, 2);
+        mGain.gain.setTargetAtTime(0.5, actx.currentTime, 2);
         startDrone(curMood);
     } else {
         mGain.gain.setTargetAtTime(0, actx.currentTime, 1);
     }
     document.getElementById('snd-btn').classList.toggle('on', audioOn);
+    document.getElementById('snd-lbl').textContent = audioOn ? "Soundscape On" : "Enable Soundscape";
 };
 
 window.submitMood = async () => {
     const inp = document.getElementById('mood-in');
     const word = inp.value.trim();
     if(!word) return;
-    
-    const mood = fbClass(word);
+    const mood = word.length % 2 === 0 ? 'joy' : 'hope'; 
     curMood = mood;
     if(audioOn) startDrone(mood);
-
     document.getElementById('ov-mood').textContent = mood.toUpperCase();
     document.getElementById('ov-mood').style.color = M[mood].h;
     document.getElementById('ov-ref').textContent = FB[mood];
     document.getElementById('overlay').classList.add('on');
-    
     try {
-        await supabaseClient.from('mood_signals').insert([{ 
-            word, mood_type: mood, city: userCity, country: userCountry 
-        }]);
+        await supabaseClient.from('mood_signals').insert([{ word, mood_type: mood, city: userCity, country: userCountry }]);
     } catch(e) { console.error(e); }
     inp.value = '';
 };
 
 window.shareMood = () => {
     const area = document.getElementById('capture-area');
-    html2canvas(area).then(canvas => {
+    html2canvas(area, { backgroundColor: "#020810", scale: 2 }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `My-Aura-${userCity}.png`;
+        link.download = `Aura-${userCity}.png`;
         link.href = canvas.toDataURL();
         link.click();
     });
@@ -126,38 +155,11 @@ window.setRegion = (btn) => {
     btn.classList.add('on');
 };
 
-function fbClass(word){
-    const wordLower = word.toLowerCase();
-    const mp = {
-        joy: ['happy','joy','smile','laugh','bright'],
-        love: ['love','heart','adore','cherish','warmth'],
-        hope: ['hope','believe','future','rise'],
-        calm: ['calm','peace','serene','still','breathe'],
-        sad: ['sad','grief','miss','lonely','hollow'],
-        anxious: ['anxious','worry','fear','nervous','stress'],
-        angry: ['angry','fury','rage','mad'],
-        numb: ['numb','void','nothing','blank'],
-        excited: ['excited','thrill','surge','electric'],
-        grateful: ['grateful','thankful','blessed','grace']
-    };
-    for(const[m,ws] of Object.entries(mp)){
-        if(ws.some(w => wordLower.includes(w))) return m;
-    }
-    return Object.keys(M)[Math.floor(Math.random()*10)];
-}
-
-// 6. INTERACTION
+// 6. INTERACTION & DRAWING
 cM.addEventListener('mousedown', e => { dragging=true; dx=e.clientX; dy=e.clientY; dtx=tx; dty=ty; });
-window.addEventListener('mousemove', e => {
-    if(dragging){
-        tx = dtx + (e.clientX - dx);
-        ty = dty + (e.clientY - dy);
-        drawAll();
-    }
-});
+window.addEventListener('mousemove', e => { if(dragging){ tx = dtx + (e.clientX - dx); ty = dty + (e.clientY - dy); drawAll(); } });
 window.addEventListener('mouseup', () => dragging=false);
 
-// 7. DRAWING ENGINE
 function resize(){
     W=window.innerWidth; H=window.innerHeight;
     [cS,cM,cC].forEach(c => {
@@ -174,22 +176,11 @@ function drawStars(){ ctxS.clearRect(0,0,W,H); stars.forEach(s=>{ ctxS.beginPath
 function drawAll(){
     drawMap();
     ctxC.clearRect(0,0,W,H);
-    
-    // THE SPONSOR NODE (Your brand/Sicily)
-    const sicilyNode = {n:'Marsala', lat:37.80, lon:12.44};
-    const [px,py] = proj(sicilyNode.lon, sicilyNode.lat);
-    
-    ctxC.beginPath(); 
-    ctxC.arc(px,py,6,0,Math.PI*2); 
-    ctxC.fillStyle='#FFD700'; // Gold color
-    ctxC.fill();
-    ctxC.shadowBlur = 15;
-    ctxC.shadowColor = 'gold';
-    
-    // Label for the sponsor
-    ctxC.fillStyle = "white";
-    ctxC.font = "10px Bebas Neue";
-    ctxC.fillText("FEATURED: MARSALA", px + 10, py + 3);
+    // FEATURED NODE: MARSALA
+    const sicily = {n:'Marsala', lat:37.80, lon:12.44};
+    const [px,py] = proj(sicily.lon, sicily.lat);
+    ctxC.beginPath(); ctxC.arc(px,py,6,0,Math.PI*2); ctxC.fillStyle='gold'; ctxC.fill();
+    ctxC.shadowBlur = 15; ctxC.shadowColor = 'gold';
 }
 
 function drawMap(){
@@ -212,57 +203,21 @@ function drawMap(){
     });
 }
 
-// 8. BOOT
 async function boot(){
     window.addEventListener('resize', resize);
     resize();
-    
     try {
         const loc = await fetch('https://ipapi.co/json/').then(r => r.json());
         userCity = loc.city; userCountry = loc.country_name;
     } catch(e) {}
-
     try {
         const mapData = await fetch('https://raw.githubusercontent.com/datasets/geo-boundaries-world-110m/master/countries.geojson').then(r => r.json());
         geoFeatures = mapData.features;
         drawAll();
     } catch(e) {}
-
-    document.getElementById('ld-bar').style.width = '100%';
-    setTimeout(()=>{
-        document.getElementById('loader').classList.add('fade');
-        setTimeout(()=>document.getElementById('loader').style.display='none', 950);
-    }, 500);
-    
+    document.getElementById('loader').classList.add('fade');
+    setTimeout(()=>document.getElementById('loader').style.display='none', 950);
     setInterval(drawStars, 150);
+    setInterval(addFeed, 4000); 
 }
-
 boot();
-
-// ═══════════════════════════════════════
-// LIVE TICKER LOGIC
-// ═══════════════════════════════════════
-function addFeed() {
-    const list = document.getElementById('feed-list');
-    if (!list) return;
-
-    const moods = Object.keys(M);
-    const randomMood = moods[Math.floor(Math.random() * moods.length)];
-    const words = ["Radiant", "Still", "Rising", "Tender", "Ache", "Surge"]; // Example variety
-    const word = words[Math.floor(Math.random() * words.length)];
-    
-    const fi = document.createElement('div');
-    fi.className = 'fi'; // This matches the CSS animation in style.css
-    fi.style.borderLeft = `2px solid ${M[randomMood].h}`;
-    fi.innerHTML = `<div class="fi-w">${word.toUpperCase()}</div><div class="fi-c">${userCity}</div>`;
-    
-    list.insertBefore(fi, list.firstChild);
-    if (list.children.length > 5) list.removeChild(list.lastChild);
-    
-    // Increment the counter in the top right
-    const cnt = document.getElementById('feed-cnt');
-    if (cnt) cnt.textContent = parseInt(cnt.textContent) + 1;
-}
-
-// Start the ticker after the page loads
-setInterval(addFeed, 4000);
