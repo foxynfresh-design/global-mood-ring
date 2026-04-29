@@ -1,146 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Global Mood Ring — Collective Emotional Cartography</title>
-    <meta name="description" content="Broadcast your mood to the world. Watch the planet pulse with collective emotion in real time." />
-    
-    <link rel="stylesheet" href="style.css" />
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Mood Ring</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Rajdhani:wght@500&display=swap" rel="stylesheet">
 </head>
 <body>
-
     <div id="loader">
-        <div class="loader-inner">
-            <div class="loader-orb"></div>
-            <div class="loader-ring r1"></div>
-            <div class="loader-ring r2"></div>
-            <div class="loader-ring r3"></div>
-            <div class="loader-texts">
-                <p class="loader-title">GLOBAL MOOD RING</p>
-                <p class="loader-sub">Tuning into the collective consciousness…</p>
-            </div>
-        </div>
+        <div class="loader-orb"></div>
     </div>
 
     <div id="app" class="hidden">
-        
-        <div id="mood-bleed"></div>
-
         <canvas id="globe-canvas"></canvas>
 
-        <canvas id="particle-canvas"></canvas>
-
         <header id="header">
-            <div class="header-left">
-                <div class="logo-mark">
-                    <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-                        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
-                        <circle cx="16" cy="16" r="8.5" stroke="currentColor" stroke-width="1.5" opacity="0.65"/>
-                        <circle cx="16" cy="16" r="3.5" fill="currentColor"/>
-                    </svg>
-                </div>
-                <div class="logo-text">
-                    <h1 class="logo-title">Global Mood Ring</h1>
-                    <p class="logo-sub">Collective Emotional Cartography</p>
-                </div>
+            <div class="logo-text">
+                <h1 class="logo-title">GLOBAL MOOD RING</h1>
             </div>
-
-            <div class="header-center">
-                <div id="signal-counter">
-                    <span id="signal-count">0</span>
-                    <span class="sig-label">signals sent</span>
-                </div>
-            </div>
-
             <div class="header-right">
-                <div id="live-badge"><span class="live-dot"></span>LIVE</div>
                 <button id="btn-audio" onclick="window.toggleAudio()">
-                    <span id="audio-icon-glyph">◎</span>
-                    <span>Soundscape</span>
+                    <span id="audio-icon-glyph">◎</span> Soundscape
                 </button>
             </div>
         </header>
 
-        <div id="globe-label">
-            <span id="globe-emoji">◌</span>
-            <span id="globe-mood-text">NEUTRAL</span>
-        </div>
-
-        <div id="world-score" class="glass-chip">
-            <p class="ws-label">DOMINANT MOOD</p>
-            <p id="ws-dominant">NEUTRAL</p>
-        </div>
-
-        <aside id="ticker-panel" class="glass-panel">
-            <div class="panel-hd">
-                <span class="panel-title">⚡ LIVE SIGNALS</span>
+        <div id="aura-overlay" class="hidden">
+            <div id="aura-card" class="glass-panel">
+                <button class="close-btn" onclick="window.closeAura()">×</button>
+                <div id="aura-bg"></div>
+                <div class="aura-content">
+                    <p class="aura-eyebrow">YOUR GLOBAL SIGNAL</p>
+                    <h2 id="aura-word">MOOD</h2>
+                    <p id="aura-loc">City, Country</p>
+                    <div class="aura-line"></div>
+                    <button class="share-btn" onclick="window.shareAura()">SHARE SIGNAL</button>
+                </div>
             </div>
-            <ul id="ticker-list"></ul>
-        </aside>
-
-        <div id="dist-panel" class="glass-panel">
-            <div class="panel-hd">
-                <span class="panel-title">MOOD DISTRIBUTION</span>
-            </div>
-            <div id="dist-bars"></div>
         </div>
 
         <div id="input-panel" class="glass-panel">
-            <p class="panel-title center-text">BROADCAST YOUR MOOD</p>
             <div class="input-row">
-                <div class="input-wrap">
-                    <input
-                        id="mood-input"
-                        type="text"
-                        maxlength="32"
-                        placeholder="How are you feeling?"
-                        autocomplete="off"
-                        spellcheck="false"
-                        oninput="window.onMoodInput(this.value)"
-                    />
-                    <span id="mood-chip"></span>
-                </div>
-                <button id="btn-send" onclick="window.submitMood()">SEND SIGNAL</button>
-            </div>
-            <p id="input-hint">Your signal joins <span id="hint-count">0</span> voices worldwide</p>
-        </div>
-
-        <div id="aura-card" class="glass-panel">
-            <div id="aura-bg"></div>
-            <div class="aura-grain"></div>
-            <div class="aura-content">
-                <p class="aura-eyebrow">MY GLOBAL MOOD SIGNAL</p>
-                <p class="aura-word" id="aura-word">MOOD</p>
-                <p class="aura-type" id="aura-type">TYPE</p>
-                <p class="aura-loc" id="aura-loc">LOCATION</p>
-                <div class="aura-line"></div>
-                <p class="aura-foot">globalmoodring.app · <span id="aura-date"></span></p>
+                <input id="mood-input" type="text" placeholder="How are you feeling?" autocomplete="off">
+                <button id="btn-send" onclick="window.submitMood()">SEND</button>
             </div>
         </div>
-
-        <div id="toast"></div>
-
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <script src="script.js"></script>
 </body>
 </html>
