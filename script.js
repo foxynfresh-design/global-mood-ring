@@ -98,7 +98,39 @@ window.submitMood = async () => {
 
 // ── BOOT ──────────────────────────────────────────────────────
 async function boot() {
-    // ... (your existing boot logic) ...
-    await fetchGlobalStats(); // Load real data from Supabase
-    setInterval(fetchGlobalStats, 30000); // Refresh every 30 seconds
+  // 1. Immediate Visual Prep
+  resizeStars();
+  
+  // 2. Try Globe Init (Wrap in try/catch to prevent blocking)
+  try {
+    initGlobe();
+  } catch(e) {
+    console.error("Globe failed, but continuing...", e);
+  }
+
+  // 3. Try Data Fetching (Non-blocking)
+  fetchGlobalStats().catch(e => console.warn("Stats failed"));
+
+  // 4. THE LOADER BYPASS
+  // This ensures the loader disappears even if the database is slow
+  document.getElementById('ld-bar').style.width = '100%';
+  
+  setTimeout(() => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+      loader.classList.add('fade');
+      setTimeout(() => loader.style.display = 'none', 900);
+    }
+  }, 500); // 0.5 second delay max
+
+  // 5. Background Tasks
+  try {
+    const loc = await fetch('https://ipapi.co/json/').then(r => r.json());
+    userCity = loc.city || 'Global';
+    userCountry = loc.country_name || 'Earth';
+  } catch(e) {
+    console.warn("Location check timed out.");
+  }
+
+  setInterval(simulateFeed, 5000);
 }
