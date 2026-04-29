@@ -640,3 +640,35 @@ body::after  { width: 500px; height: 500px; background: var(--accent);  bottom: 
   #world-score { top: 70px; left: 12px; }
   .header-center { display: none; }
 }
+#input-panel {
+  position: absolute;
+  bottom: 24px;
+  left: 50%; transform: translateX(-50%);
+  width: min(400px, 90vw); /* Narrower for cleaner look */
+  padding: 20px 22px 16px;
+  z-index: 10;
+}
+
+/* Updated Aura Card for visibility */
+#aura-card {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  width: 440px; height: 248px;
+  border-radius: 20px;
+  overflow: hidden;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s, transform 0.5s;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+
+#aura-card.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Remove location row styles since we removed the HTML */
+#location-row { display: none; }
