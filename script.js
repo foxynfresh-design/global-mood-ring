@@ -166,6 +166,8 @@ function resize(){
         c.width=W*DPR; c.height=H*DPR; 
         c.style.width=W+'px'; c.style.height=H+'px'; 
         c.getContext('2d').scale(DPR,DPR);
+        cM.style.zIndex = "2";
+cC.style.zIndex = "3"; // Cities on top of map
     });
     mkStars(); drawAll();
 }
