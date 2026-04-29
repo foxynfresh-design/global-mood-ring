@@ -1,98 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Global Mood Ring</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-    }
-  }
-</script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-<!-- LOADER -->
-<div id="loader">
-  <div id="ld-title">GLOBAL MOOD RING</div>
-  <div id="ld-sub">Tuning into Earth's Frequency</div>
-  <div id="ld-track"><div id="ld-bar"></div></div>
-</div>
-
-<!-- GLOBE CANVAS -->
-<div id="globe-wrap"></div>
-
-<!-- STARS CANVAS -->
-<canvas id="c-stars"></canvas>
-
-<!-- TOOLTIP -->
-<div id="tip"><div id="tip-name"></div><div id="tip-pulse"></div></div>
-
-<!-- TOP LEFT LOGO -->
-<div class="ui" id="logo">
-  <span class="l">GLOBAL</span>
-  <span class="l mood" id="logo-mood">MOOD</span>
-  <span class="l">RING</span>
-  <sub>Emotional Pulse of Earth</sub>
-</div>
-
-<!-- TOP RIGHT STATUS -->
-<div class="ui" id="tr">
-  <div class="chip"><div class="live-dot"></div>Signals: <span id="feed-cnt" style="margin-left:5px;color:var(--mc)">0</span></div>
-  <div class="chip" id="mood-chip">CALM</div>
-</div>
-
-<!-- LIVE FEED -->
-<div class="ui" id="feed-wrap">
-  <div id="feed-hd">Live Signal</div>
-  <div id="feed-list"></div>
-</div>
-
-<!-- BOTTOM LEFT BIG MOOD -->
-<div class="ui" id="bl">
-  <div id="big-mood">CALM</div>
-  <div id="poetic">The world holds its breath between heartbeats...</div>
-</div>
-
-<!-- BOTTOM RIGHT BARS + SOUND -->
-<div class="ui" id="br">
-  <div id="bars-hd">Mood Distribution</div>
-  <div id="bars"></div>
-  <button id="snd-btn" onclick="toggleAudio()">
-    <div class="sdot"></div><span id="snd-lbl">Enable Soundscape</span>
-  </button>
-</div>
-
-<!-- INPUT BAR -->
-<div class="ui" id="input-bar">
-  <div id="irow">
-    <input id="mood-in" type="text" placeholder="TYPE ONE WORD..." maxlength="28" autocomplete="off" onkeydown="if(event.key==='Enter') submitMood()">
-    <button id="send-btn" onclick="submitMood()">SEND</button>
+  <!-- ═══════════════════════════════════════════════ LOADING SCREEN -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-ring"></div>
+      <div class="loader-ring loader-ring--2"></div>
+      <div class="loader-ring loader-ring--3"></div>
+      <p class="loader-text">INITIALISING GLOBAL MOOD RING</p>
+      <p class="loader-sub">Connecting to the collective consciousness…</p>
+    </div>
   </div>
-  <div id="input-hint">Express how the world feels right now</div>
-</div>
 
-<!-- OVERLAY / SHARE -->
-<div id="overlay">
-  <div id="capture-area">
-    <div id="ov-title">GLOBAL MOOD RING</div>
-    <div id="ov-word"></div>
-    <div id="ov-mood">JOY</div>
-    <div id="ov-sub">Your Emotional Signature</div>
-    <div id="ov-city"></div>
-  </div>
-  <div style="display:flex;gap:10px;margin-top:30px;">
-    <button class="ov-btn main" onclick="shareMood()">DOWNLOAD AURA</button>
-    <button class="ov-btn" onclick="closeOverlay()">CLOSE</button>
-  </div>
-</div>
+  <!-- ═══════════════════════════════════════════════ APP SHELL -->
+  <div id="app" class="hidden">
 
-<script src="script.js"></script>
+    <!-- ── Header ── -->
+    <header id="header">
+      <div class="header-left">
+        <span class="logo-glyph">◈</span>
+        <div>
+          <h1 class="logo-title">Global Mood Ring</h1>
+          <p class="logo-sub">Collective Emotional Cartography</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div id="live-indicator"><span class="live-dot"></span>LIVE</div>
+        <button id="btn-audio" onclick="window.toggleAudio()">◎ Enable Soundscape</button>
+      </div>
+    </header>
+
+    <!-- ── Globe canvas ── -->
+    <canvas id="globe-canvas"></canvas>
+
+    <!-- ── Mood label floating over globe ── -->
+    <div id="globe-label">
+      <span id="globe-mood-text">NEUTRAL</span>
+      <span id="globe-mood-emoji">◌</span>
+    </div>
+
+    <!-- ── Input Panel (bottom-centre) ── -->
+    <div id="input-panel" class="glass">
+      <p class="panel-title">BROADCAST YOUR MOOD</p>
+      <div class="input-row">
+        <input
+          id="mood-input"
+          type="text"
+          maxlength="32"
+          placeholder="Type a mood word…"
+          oninput="window.onMoodInput(this.value)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="btn-send" onclick="window.submitMood()">SEND ⇢</button>
+      </div>
+      <div id="city-row">
+        <input id="city-input" type="text" placeholder="City (optional)" />
+        <input id="country-input" type="text" placeholder="Country (optional)" />
+      </div>
+      <p id="input-hint">Your signal will join the global stream</p>
+    </div>
+
+    <!-- ── Signal Ticker (right panel) ── -->
+    <aside id="ticker-panel" class="glass">
+      <p class="panel-title">⚡ LIVE SIGNALS</p>
+      <ul id="ticker-list"></ul>
+    </aside>
+
+    <!-- ── Mood Distribution (bottom-right) ── -->
+    <div id="dist-panel" class="glass">
+      <p class="panel-title">MOOD DISTRIBUTION</p>
+      <div id="dist-bars"></div>
+    </div>
+
+    <!-- ── Aura Card (hidden, used for screenshot) ── -->
+    <div id="aura-card">
+      <div class="aura-bg" id="aura-bg"></div>
+      <div class="aura-content">
+        <p class="aura-label">MY GLOBAL MOOD SIGNAL</p>
+        <p class="aura-word" id="aura-word">—</p>
+        <p class="aura-mood" id="aura-mood">—</p>
+        <p class="aura-meta" id="aura-meta">—</p>
+        <p class="aura-footer">globalmoodnring.app • <span id="aura-date"></span></p>
+      </div>
+    </div>
+
+    <!-- ── Toast ── -->
+    <div id="toast"></div>
+
+  </div><!-- /#app -->
+
+  <!-- ═══════════════════════════════════════════════ LIBRARIES -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="script.js"></script>
+
 </body>
 </html>
