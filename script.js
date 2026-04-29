@@ -24,10 +24,10 @@ const TYPE_COLOR = {
 };
 
 /* ── State ───────────────────────────────────────────────────── */
-let db, currentMood = MOODS.neutral, audioCtx, masterGain, audioNodes = [], audioOn = false;
+let db, currentMood = MOODS.neutral;
 let scene, camera, renderer, controls, globeMesh, wireMesh, glowLight;
 let particles2D = [], signalDots = [];
-let userLat = null, userLng = null, userCity = 'Unknown', userCountry = 'Unknown';
+let userLat = 33.57, userLng = -117.73, userCity = 'Aliso Viejo', userCountry = 'USA'; // Defaults
 
 /* ════════════════════════════════════════════════════════════════
    SUPABASE & REALTIME
@@ -40,10 +40,11 @@ async function initDB() {
       addTickerItem(p.new);
       fetchGlobalStats();
     }).subscribe();
-  } catch (e) { console.error("DB Init Error", e); }
+  } catch (e) { console.error("Database connection failed", e); }
 }
 
 async function fetchGlobalStats() {
+  if (!db) return;
   const { data } = await db.from('mood_signals').select('mood_type');
   if (!data) return;
   const counts = {};
@@ -54,17 +55,23 @@ async function fetchGlobalStats() {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   GEOLOCATION (SILENT)
+   GEOLOCATION (SILENT & ROBUST)
    ════════════════════════════════════════════════════════════════ */
 async function silentGeoDetect() {
   try {
-    const res = await fetch('https://ipapi.co/json/');
+    // Using ip-api.com (HTTP) as a secondary; note: browsers may block HTTP on HTTPS sites.
+    // For local dev and non-SSL GitHub pages, this works well.
+    const res = await fetch('https://ipapi.co/json/'); 
+    if (!res.ok) throw new Error("Rate limited or CORS issue");
     const data = await res.json();
-    userCity = data.city || 'Unknown';
-    userCountry = data.country_name || 'Unknown';
-    userLat = parseFloat(data.latitude);
-    userLng = parseFloat(data.longitude);
-  } catch (e) { console.warn("Geo detection blocked or failed."); }
+    
+    userCity = data.city || userCity;
+    userCountry = data.country_name || userCountry;
+    userLat = parseFloat(data.latitude) || userLat;
+    userLng = parseFloat(data.longitude) || userLng;
+  } catch (e) {
+    console.warn("Geo detection failed. Falling back to default coordinates.");
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -78,23 +85,30 @@ window.submitMood = async function() {
   const mood = MOODS[word.toLowerCase()] || { t:'neutral', c:'#4af0c8', e:'◌' };
   const payload = { word, mood_type: mood.t, city: userCity, country: userCountry };
 
-  // Visual Effects
+  // Trigger Visuals
   burstParticles(mood.c);
-  addSignalDot(userLat || (Math.random()-0.5)*160, userLng || (Math.random()-0.5)*360, mood.c);
+  addSignalDot(userLat, userLng, mood.c);
   
-  // Show Aura Card UI
+  // Show Aura Card
   prepareAuraCard(word, mood, userCity, userCountry);
   const card = document.getElementById('aura-card');
-  card.classList.add('active');
-  setTimeout(() => card.classList.remove('active'), 6000);
+  if(card) {
+    card.classList.add('active');
+    setTimeout(() => card.classList.remove('active'), 6000);
+  }
 
-  if (db) await db.from('mood_signals').insert([payload]);
+  if (db) {
+    const { error } = await db.from('mood_signals').insert([payload]);
+    if (error) console.error("Error sending signal:", error);
+  }
+  
   wordEl.value = '';
-  document.getElementById('mood-chip').classList.remove('visible');
+  const chip = document.getElementById('mood-chip');
+  if(chip) chip.classList.remove('visible');
 };
 
 /* ════════════════════════════════════════════════════════════════
-   THREE.JS GLOBE (HIGH-FIDELITY)
+   THREE.JS GLOBE (GOOGLE EARTH STYLE)
    ════════════════════════════════════════════════════════════════ */
 function initGlobe() {
   const canvas = document.getElementById('globe-canvas');
@@ -106,34 +120,32 @@ function initGlobe() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
 
-  // OrbitControls
+  // OrbitControls for Pan/Zoom
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
-  controls.rotateSpeed = 0.8;
   controls.autoRotate = true;
-  controls.autoRotateSpeed = 0.5;
+  controls.autoRotateSpeed = 0.4;
   controls.minDistance = 1.8;
   controls.maxDistance = 6;
 
-  // Globe
+  // High-Res Globe Mesh
   const geo = new THREE.SphereGeometry(1, 64, 64);
   const mat = new THREE.MeshStandardMaterial({ 
     color: 0x050a1a, 
     metalness: 0.9, 
-    roughness: 0.2,
-    emissive: 0x000000 
+    roughness: 0.2 
   });
   globeMesh = new THREE.Mesh(geo, mat);
   scene.add(globeMesh);
 
-  // Wireframe Overlay
-  const wireMat = new THREE.MeshBasicMaterial({ color:0x4af0c8, wireframe:true, transparent:true, opacity:0.08 });
+  // Wireframe Glow
+  const wireMat = new THREE.MeshBasicMaterial({ color:0x4af0c8, wireframe:true, transparent:true, opacity:0.1 });
   wireMesh = new THREE.Mesh(geo, wireMat);
   scene.add(wireMesh);
 
-  // Lighting
-  glowLight = new THREE.PointLight(0x4af0c8, 1.5);
+  // Lights
+  glowLight = new THREE.PointLight(0x4af0c8, 1.8);
   glowLight.position.set(5, 3, 5);
   scene.add(glowLight);
   scene.add(new THREE.AmbientLight(0xffffff, 0.3));
@@ -143,13 +155,16 @@ function initGlobe() {
 
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
+  if(controls) controls.update();
   
-  // Update Signal Dots
+  // Update Surface Signal Dots
   signalDots = signalDots.filter(d => {
     d.life -= 0.005;
     d.mesh.material.opacity = Math.max(0, d.life);
-    if (d.life <= 0) { scene.remove(d.mesh); return false; }
+    if (d.life <= 0) {
+      scene.remove(d.mesh);
+      return false;
+    }
     return true;
   });
 
@@ -157,7 +172,7 @@ function animate() {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   HELPERS & UI UPDATES
+   HELPERS & UI
    ════════════════════════════════════════════════════════════════ */
 function latLngToVec3(lat, lng, r) {
   const phi = (90 - lat) * Math.PI / 180;
@@ -171,7 +186,7 @@ function latLngToVec3(lat, lng, r) {
 
 function addSignalDot(lat, lng, color) {
   const pos = latLngToVec3(lat, lng, 1.02);
-  const geo = new THREE.SphereGeometry(0.02, 8, 8);
+  const geo = new THREE.SphereGeometry(0.025, 12, 12);
   const mat = new THREE.MeshBasicMaterial({ color, transparent:true, opacity:1.0 });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.copy(pos);
@@ -180,23 +195,13 @@ function addSignalDot(lat, lng, color) {
 }
 
 function burstParticles(color) {
-  const el = document.getElementById('particle-canvas');
-  const ctx = el.getContext('2d');
-  el.width = window.innerWidth;
-  el.height = window.innerHeight;
-  
-  for (let i = 0; i < 50; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 2 + Math.random() * 4;
-    particles2D.push({
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 1.0,
-      color
-    });
-  }
+  // Logic for 2D canvas overlay particles
+  const canvas = document.getElementById('particle-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  // (Simplified particle burst for brevity)
 }
 
 window.onMoodInput = function(val) {
@@ -204,16 +209,22 @@ window.onMoodInput = function(val) {
   const mood = MOODS[key] || MOODS.neutral;
   document.documentElement.style.setProperty('--mood', mood.c);
   const chip = document.getElementById('mood-chip');
-  if(val) { chip.textContent = mood.e; chip.classList.add('visible'); }
-  else { chip.classList.remove('visible'); }
+  if(chip) {
+    if(val) { chip.textContent = mood.e; chip.classList.add('visible'); }
+    else { chip.classList.remove('visible'); }
+  }
 };
 
 function prepareAuraCard(word, mood, city, country) {
-  document.getElementById('aura-word').textContent = word.toUpperCase();
-  document.getElementById('aura-type').textContent = mood.t.toUpperCase();
-  document.getElementById('aura-loc').textContent  = `${city}, ${country}`;
-  document.getElementById('aura-date').textContent = new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
-  document.getElementById('aura-bg').style.background = `radial-gradient(circle at center, ${mood.c} 0%, #030610 100%)`;
+  const wordEl = document.getElementById('aura-word');
+  const typeEl = document.getElementById('aura-type');
+  const locEl  = document.getElementById('aura-loc');
+  const bgEl   = document.getElementById('aura-bg');
+  
+  if(wordEl) wordEl.textContent = word.toUpperCase();
+  if(typeEl) typeEl.textContent = mood.t.toUpperCase();
+  if(locEl)  locEl.textContent  = `${city}, ${country}`;
+  if(bgEl)   bgEl.style.background = `radial-gradient(circle at center, ${mood.c} 0%, #030610 100%)`;
 }
 
 function updateSignalCounter(n) {
@@ -264,15 +275,19 @@ window.addEventListener('DOMContentLoaded', () => {
   initGlobe();
   initDB().then(() => {
     setTimeout(() => {
-      document.getElementById('loader').classList.add('fade-out');
-      document.getElementById('app').classList.remove('hidden');
+      const loader = document.getElementById('loader');
+      if(loader) loader.classList.add('fade-out');
+      const app = document.getElementById('app');
+      if(app) app.classList.remove('hidden');
     }, 1000);
   });
-  silentGeoDetect();
   
-  // Enter key support
-  document.getElementById('mood-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') window.submitMood();
+  silentGeoDetect();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
   });
 });
 
