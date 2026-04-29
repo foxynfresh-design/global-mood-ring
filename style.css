@@ -4,75 +4,36 @@
   --text: #eaf0ff;
   --glass: rgba(7, 12, 32, 0.85);
   --border: rgba(120, 180, 255, 0.15);
-  --mood: #4af0c8;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; overflow: hidden; height: 100vh; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Rajdhani', sans-serif;
-  overflow: hidden;
-  height: 100vh;
-}
-
+#globe-canvas { position: absolute; inset: 0; z-index: 1; }
 .hidden { display: none !important; }
 
-#globe-canvas {
-  position: absolute; inset: 0;
-  z-index: 1;
-}
-
-/* Header */
-#header {
-  position: absolute; top: 0; width: 100%;
-  padding: 24px; display: flex;
-  justify-content: space-between; z-index: 10;
-}
-
+#header { position: absolute; top: 0; width: 100%; padding: 24px; display: flex; justify-content: space-between; z-index: 10; }
 .logo-title { font-family: 'Cinzel', serif; letter-spacing: 0.2em; font-size: 1.2rem; }
 
-/* Input Panel */
-#input-panel {
-  position: absolute; bottom: 30px;
-  left: 50%; transform: translateX(-50%);
-  width: 400px; padding: 20px;
-  z-index: 10;
-}
+.glass-panel { background: var(--glass); border: 1px solid var(--border); backdrop-filter: blur(20px); border-radius: 16px; padding: 20px; }
+.panel-title { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.1em; margin-bottom: 10px; opacity: 0.6; }
 
-.glass-panel {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
-}
+#ticker-panel { position: absolute; top: 80px; right: 20px; width: 220px; z-index: 10; }
+#dist-panel { position: absolute; bottom: 120px; right: 20px; width: 220px; z-index: 10; }
+#ticker-list { list-style: none; font-size: 0.8rem; }
+.ticker-item { margin-bottom: 5px; border-left: 2px solid var(--accent); padding-left: 8px; }
 
-.input-row { display: flex; gap: 10px; margin-top: 10px; }
+#input-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 400px; z-index: 10; }
+.input-row { display: flex; gap: 10px; }
 input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 12px; color: white; border-radius: 8px; outline: none; }
 #btn-send { background: var(--accent); border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #030610; }
 
-/* Aura Overlay */
-#aura-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.85);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100;
-}
-
-#aura-card {
-  width: 440px; padding: 40px;
-  text-align: center; position: relative;
-  box-shadow: 0 0 60px rgba(74, 240, 200, 0.15);
-}
-
-#aura-word { font-family: 'Cinzel', serif; font-size: 3.5rem; color: var(--accent); margin-bottom: 5px; }
-.aura-loc { opacity: 0.5; font-size: 0.9rem; }
+#aura-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; }
+#aura-card { width: 420px; text-align: center; position: relative; }
+#aura-word { font-family: 'Cinzel', serif; font-size: 3rem; color: var(--accent); margin: 10px 0; }
 .close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-.share-btn { margin-top: 20px; background: var(--accent); border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-/* Loader */
-#loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s; }
+#loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
 #loader.fade-out { opacity: 0; pointer-events: none; }
 .loader-orb { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 30px var(--accent); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.5; } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
