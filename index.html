@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Global Mood Ring</title>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@1,300;1,400;1,600&family=Tenor+Sans&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,45 +21,35 @@
 <canvas id="c-stars"></canvas>
 <canvas id="c-map"></canvas>
 <canvas id="c-cities"></canvas>
-<canvas id="c-fx"></canvas>
-<div id="aurora"></div>
-<div id="vignette"></div>
-<div id="rim"></div>
 
 <div id="tip">
     <div id="tip-name"></div>
-    <div id="tip-mood"></div>
-    <div id="tip-kw"></div>
     <div id="tip-pulse"></div>
 </div>
 
 <div class="ui" id="logo">
-    <span class="l" style="color:var(--text)">GLOBAL</span>
+    <span class="l">GLOBAL</span>
     <span class="l mood" id="logo-mood">MOOD</span>
-    <span class="l" style="color:var(--text)">RING</span>
+    <span class="l">RING</span>
     <sub>Emotional Pulse of Earth</sub>
 </div>
-
-<div class="ui" id="bc"><span onclick="resetView()">World</span></div>
 
 <div class="ui" id="tr">
     <div class="chip">
         <div class="live-dot"></div>
-        Live Signals: <span id="feed-cnt" style="margin-left: 5px; color: var(--mc);">0</span>
+        Signals: <span id="feed-cnt" style="margin-left:5px; color:var(--mc)">0</span>
     </div>
     <div class="chip" id="zoom-chip">1.0×</div>
 </div>
 
 <div class="ui" id="left">
-    <div class="reg on" data-r="all" onclick="setRegion(this,'all')">All Regions<span class="n" id="n-all">847</span></div>
-    <div class="reg" data-r="eu" onclick="setRegion(this,'eu')">Europe</div>
-    <div class="reg" data-r="am" onclick="setRegion(this,'am')">Americas</div>
-    <div class="reg" data-r="as" onclick="setRegion(this,'as')">Asia · Pacific</div>
-    <div class="reg" data-r="af" onclick="setRegion(this,'af')">Africa</div>
+    <div class="reg on" onclick="setRegion(this,'all')">All Regions</div>
+    <div class="reg" onclick="setRegion(this,'eu')">Europe</div>
+    <div class="reg" onclick="setRegion(this,'it')">Sicily</div>
 </div>
 
 <div class="ui" id="feed-wrap">
-    <div id="feed-hd"><span>Live Signal</span><span id="feed-cnt">0</span></div>
+    <div id="feed-hd">Live Signal</div>
     <div id="feed-list"></div>
 </div>
 
@@ -80,28 +67,21 @@
 </div>
 
 <div class="ui" id="input-bar">
-    <div id="ilabel">How are you feeling?</div>
     <div id="irow">
-        <input id="mood-in" type="text" placeholder="ONE WORD" maxlength="28" autocomplete="off" spellcheck="false">
+        <input id="mood-in" type="text" placeholder="ONE WORD" maxlength="28" autocomplete="off">
         <button id="send-btn" onclick="submitMood()">SEND</button>
     </div>
 </div>
 
-<div class="ui" id="zoom-ctrl">
-    <button class="zb" onclick="zoomBy(1.45)">+</button>
-    <button class="zb" onclick="zoomBy(0.69)">−</button>
-    <button class="zb" onclick="resetView()" style="font-size:12px">⌂</button>
-</div>
-
 <div id="overlay">
-    <div id="capture-area" style="padding: 60px; text-align: center; background: #020810; border: 1px solid var(--mc);">
-        <div id="ov-mood" style="font-family:'Bebas Neue'; font-size: 80px;">JOY</div>
-        <div id="ov-sub" style="font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--muted); margin-top: 10px;">Your Emotional Signature</div>
-        <div id="ov-ref" style="font-family:'Cormorant Garamond'; font-style: italic; font-size: 18px; margin-top: 20px; max-width: 400px; line-height: 1.6;"></div>
+    <div id="capture-area">
+        <div id="ov-mood">JOY</div>
+        <div id="ov-sub">Your Emotional Signature</div>
+        <div id="ov-ref"></div>
     </div>
-    <div style="display:flex; gap: 10px; margin-top: 30px;">
-        <button onclick="shareMood()" style="background:var(--mc); color:#020810; border:none; padding:12px 24px; font-family:'Bebas Neue'; cursor:pointer; letter-spacing: 2px;">DOWNLOAD AURA</button>
-        <button onclick="closeOverlay()" style="background:none; border:1px solid var(--border); color:var(--text); padding:12px 24px; font-family:'Bebas Neue'; cursor:pointer; letter-spacing: 2px;">CLOSE</button>
+    <div style="display:flex; gap:10px; margin-top:30px;">
+        <button class="ov-btn main" onclick="shareMood()">DOWNLOAD AURA</button>
+        <button class="ov-btn" onclick="closeOverlay()">CLOSE</button>
     </div>
 </div>
 
