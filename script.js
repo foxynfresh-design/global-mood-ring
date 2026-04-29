@@ -6,7 +6,7 @@ const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 
 let db, scene, camera, renderer, controls, globeMesh, signalDots = [];
 let audioCtx, masterGain, audioOn = false;
-let userLat = 33.57, userLng = -117.73, userCity = 'Aliso Viejo', userCountry = 'USA';
+let userLat = 33.57, userLng = -117.73, userCity = 'Aliso Viejo', userCountry = 'USA'; 
 
 /* ── Audio ── */
 window.toggleAudio = function() {
@@ -66,15 +66,33 @@ function initGlobe() {
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
-    signalDots.forEach(d => {
+    signalDots = signalDots.filter(d => {
         d.life -= 0.005;
         d.mesh.material.opacity = d.life;
-        if (d.life <= 0) scene.remove(d.mesh);
+        if (d.life <= 0) { scene.remove(d.mesh); return false; }
+        return true;
     });
     renderer.render(scene, camera);
 }
 
-/* ── Logic ── */
+/* ── UI Logic ── */
+async function fetchStats() {
+    if (!db) return;
+    const { data } = await db.from('mood_signals').select('word, mood_type, city').order('id', { ascending: false }).limit(10);
+    if (data) renderStats(data);
+}
+
+function renderStats(data) {
+    const list = document.getElementById('ticker-list');
+    list.innerHTML = '';
+    data.forEach(s => {
+        const li = document.createElement('li');
+        li.className = 'ticker-item';
+        li.textContent = `${s.word} · ${s.city}`;
+        list.appendChild(li);
+    });
+}
+
 window.submitMood = async function() {
     const word = document.getElementById('mood-input').value.trim();
     if (!word) return;
@@ -86,6 +104,7 @@ window.submitMood = async function() {
 
     if (db) await db.from('mood_signals').insert([{ word, city: userCity, country: userCountry, mood_type: 'neutral' }]);
     document.getElementById('mood-input').value = '';
+    fetchStats();
 };
 
 window.closeAura = function() { document.getElementById('aura-overlay').classList.add('hidden'); };
@@ -103,11 +122,11 @@ function addSignalDot(lat, lng, color) {
 window.addEventListener('DOMContentLoaded', () => {
     initGlobe();
     db = supabase.createClient(SB_URL, SB_ANON);
-    
-    // Geolocation Fallback
+    fetchStats();
+
     fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
         userCity = d.city || userCity; userLat = d.latitude || userLat; userLng = d.longitude || userLng;
-    }).catch(() => console.log("CORS block: Using Aliso Viejo coordinates."))
+    }).catch(() => console.log("CORS/Rate limit fallback activated."))
     .finally(() => {
         setTimeout(() => {
             document.getElementById('loader').classList.add('fade-out');
