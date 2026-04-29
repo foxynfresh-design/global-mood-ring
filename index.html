@@ -26,28 +26,20 @@
 
   <div id="app" class="hidden">
     <div id="mood-bleed"></div>
-    <canvas id="globe-canvas"></canvas>
-    <canvas id="particle-canvas"></canvas>
 
+    <canvas id="globe-canvas"></canvas>
+    
     <header id="header">
       <div class="header-left">
         <div class="logo-mark">
           <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
             <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
-            <circle cx="16" cy="16" r="8.5" stroke="currentColor" stroke-width="1.5" opacity="0.65"/>
             <circle cx="16" cy="16" r="3.5" fill="currentColor"/>
           </svg>
         </div>
         <div class="logo-text">
           <h1 class="logo-title">Global Mood Ring</h1>
           <p class="logo-sub">Collective Emotional Cartography</p>
-        </div>
-      </div>
-
-      <div class="header-center">
-        <div id="signal-counter">
-          <span id="signal-count">—</span>
-          <span class="sig-label">signals sent</span>
         </div>
       </div>
 
@@ -65,15 +57,9 @@
       <span id="globe-mood-text">NEUTRAL</span>
     </div>
 
-    <div id="world-score" class="glass-chip">
-      <p class="ws-label">DOMINANT MOOD</p>
-      <p id="ws-dominant">—</p>
-    </div>
-
     <aside id="ticker-panel" class="glass-panel">
       <div class="panel-hd">
         <span class="panel-title">⚡ LIVE SIGNALS</span>
-        <span id="ticker-badge" class="count-badge">0</span>
       </div>
       <ul id="ticker-list"></ul>
     </aside>
@@ -87,32 +73,20 @@
 
     <div id="input-panel" class="glass-panel">
       <p class="panel-title center-text">BROADCAST YOUR MOOD</p>
-      <div id="suggestions"></div>
       <div class="input-row">
         <div class="input-wrap">
-          <input id="mood-input" type="text" maxlength="32" placeholder="How are you feeling?" oninput="window.onMoodInput(this.value)" autocomplete="off" />
-          <span id="mood-chip"></span>
+          <input id="mood-input" type="text" placeholder="How are you feeling?" autocomplete="off" />
         </div>
         <button id="btn-send" onclick="window.submitMood()">SEND SIGNAL</button>
       </div>
-      <p id="input-hint">Your signal joins <span id="hint-count">0</span> voices worldwide</p>
     </div>
 
-    <div id="share-badge" class="glass-chip hidden">
-      <span id="share-url-text"></span>
-      <button id="share-copy-btn" onclick="window.copyShareUrl()">Copy link</button>
-    </div>
-
-    <div id="aura-card">
+    <div id="aura-card" class="glass-panel">
       <div id="aura-bg"></div>
-      <div class="aura-grain"></div>
       <div class="aura-content">
-        <p class="aura-eyebrow">MY GLOBAL MOOD SIGNAL</p>
-        <p class="aura-word" id="aura-word">—</p>
-        <p class="aura-type" id="aura-type">—</p>
-        <p class="aura-loc" id="aura-loc">—</p>
-        <div class="aura-line"></div>
-        <p class="aura-foot">globalmoodring.app · <span id="aura-date"></span></p>
+        <p class="aura-eyebrow">GLOBAL SIGNAL RECEIVED</p>
+        <h2 id="aura-word">MOOD</h2>
+        <p id="aura-loc">Location</p>
       </div>
     </div>
 
@@ -121,6 +95,9 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="script.js"></script>
