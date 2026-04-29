@@ -1,11 +1,9 @@
-
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZ4cWtoaWhpbGZtYm5lbmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MTYxNTMsImV4cCI6MjA5Mjk5MjE1M30.xXn9k752Qk3oIGqU1GkrgryXNxVOPPU9ECX2CbDMHhE';
-
 /* ════════════════════════════════════════════════════════════
    GLOBAL MOOD RING — script.js
    Three.js r128 | Supabase v2 | html2canvas 1.4.1
    ════════════════════════════════════════════════════════════ */
 
+(function () {
 'use strict';
 
 /* ── Supabase Config ────────────────────────────────────────── */
@@ -640,3 +638,5 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 /* expose fetchGlobalStats for any manual refresh need */
 window.fetchGlobalStats = fetchGlobalStats;
+
+})(); // end IIFE
