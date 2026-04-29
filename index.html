@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Mood Ring</title>
+    <title>Global Mood Ring — Collective Emotional Cartography</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Rajdhani:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="loader">
-        <div class="loader-orb"></div>
+        <div class="loader-inner">
+            <div class="loader-orb"></div>
+            <p class="loader-sub">Tuning into the collective consciousness…</p>
+        </div>
     </div>
 
     <div id="app" class="hidden">
@@ -35,17 +38,20 @@
                     <h2 id="aura-word">MOOD</h2>
                     <p id="aura-loc">City, Country</p>
                     <div class="aura-line"></div>
-                    <button class="share-btn" onclick="window.shareAura()">SHARE SIGNAL</button>
+                    <p class="aura-date" id="aura-date"></p>
+                    <button class="share-btn" onclick="window.copyLink()">COPY SHARE LINK</button>
                 </div>
             </div>
         </div>
 
         <div id="input-panel" class="glass-panel">
             <div class="input-row">
-                <input id="mood-input" type="text" placeholder="How are you feeling?" autocomplete="off">
-                <button id="btn-send" onclick="window.submitMood()">SEND</button>
+                <input id="mood-input" type="text" placeholder="How are you feeling?" autocomplete="off" oninput="window.onMoodInput(this.value)">
+                <button id="btn-send" onclick="window.submitMood()">SEND SIGNAL</button>
             </div>
         </div>
+
+        <div id="toast"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
