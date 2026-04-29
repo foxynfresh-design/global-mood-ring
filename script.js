@@ -5,19 +5,18 @@ const supabaseUrl = 'https://elffxqkhihilfmbnengx.supabase.co';
 const supabaseKey = 'sb_publishable_KcAegsmUshdHvwPJJoJMJg_fbOyAono';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-// 2. GLOBAL STATE
+// 2. STATE
 let userCity = "Global", userCountry = "Earth";
 let W=0, H=0, DPR=window.devicePixelRatio||1;
 let tx=0, ty=0, sc=1;
 const SMIN=0.5, SMAX=22;
 let dragging=false, dx=0, dy=0, dtx=0, dty=0, movedDist=0;
-let selCid=null, selCity=null, curMood='calm', curRegion='all';
+let selCity=null, curMood='calm';
 let geoFeatures=[];
-let stars=[]; let ripples=[];
-let actx=null, mGain=null, verb=null, comp=null;
+let stars=[];
 let audioOn=false;
 
-// 3. THEMES & DATA
+// 3. THEMES
 const M = {
     joy: {h:'#F7C948',g:'rgba(247,201,72,0.4)'},
     love: {h:'#FF6B8A',g:'rgba(255,107,138,0.4)'},
@@ -34,14 +33,15 @@ const M = {
 const CITIES = [
     {n:'Rome',lat:41.90,lon:12.50,mood:'love'},
     {n:'Palermo',lat:38.12,lon:13.36,mood:'hope'},
+    {n:'Marsala',lat:37.80,lon:12.44,mood:'grateful'},
     {n:'New York',lat:40.71,lon:-74.01,mood:'excited'},
     {n:'London',lat:51.51,lon:-.13,mood:'anxious'},
     {n:'Tokyo',lat:35.68,lon:139.69,mood:'calm'}
 ];
 
 // 4. CANVAS SETUP
-const cS=document.getElementById('c-stars'), cM=document.getElementById('c-map'), cC=document.getElementById('c-cities'), cX=document.getElementById('c-fx');
-const ctxS=cS.getContext('2d'), ctxM=cM.getContext('2d'), ctxC=cC.getContext('2d'), ctxX=cX.getContext('2d');
+const cS=document.getElementById('c-stars'), cM=document.getElementById('c-map'), cC=document.getElementById('c-cities');
+const ctxS=cS.getContext('2d'), ctxM=cM.getContext('2d'), ctxC=cC.getContext('2d');
 const BW=960, BH=500;
 
 function proj(lon,lat){
@@ -53,28 +53,22 @@ function proj(lon,lat){
     return[x,y];
 }
 
-// 5. ESSENTIAL UI FUNCTIONS (This fixes the "is not defined" errors)
-window.setRegion = (btn, r) => {
+// 5. GLOBAL FUNCTIONS (Attaching to window for HTML buttons)
+window.zoomBy = (f) => { sc = Math.max(SMIN, Math.min(SMAX, sc * f)); drawAll(); };
+window.resetView = () => { tx=0; ty=0; sc=1; drawAll(); };
+window.setRegion = (btn, r) => { 
     document.querySelectorAll('.reg').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
-    curRegion = r;
 };
 
-window.zoomBy = (f) => {
-    const s = Math.max(SMIN, Math.min(SMAX, sc * f));
-    sc = s;
-    drawMap();
-};
-
-window.resetView = () => {
-    tx=0; ty=0; sc=1;
-    drawMap();
-};
-
-window.toggleAudio = () => {
-    audioOn = !audioOn;
-    document.getElementById('snd-btn').classList.toggle('on', audioOn);
-    document.getElementById('snd-lbl').textContent = audioOn ? 'Soundscape On' : 'Enable Soundscape';
+window.shareMood = () => {
+    const area = document.getElementById('capture-area');
+    html2canvas(area).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `My-Mood-${userCity}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    });
 };
 
 window.submitMood = async () => {
@@ -82,85 +76,97 @@ window.submitMood = async () => {
     const word = inp.value.trim();
     if(!word) return;
     inp.value = '';
+    const mood = word.length % 2 === 0 ? 'joy' : 'hope'; // Simple placeholder logic
+    
     document.getElementById('ov-mood').textContent = word.toUpperCase();
     document.getElementById('overlay').classList.add('on');
-    try { await supabaseClient.from('mood_signals').insert([{ word, city: userCity, country: userCountry }]); } catch(e) {}
+    
+    try {
+        await supabaseClient.from('mood_signals').insert([{ 
+            word: word, 
+            mood_type: mood, 
+            city: userCity, 
+            country: userCountry 
+        }]);
+    } catch(e) { console.error("Database error:", e); }
 };
 
 window.closeOverlay = () => document.getElementById('overlay').classList.remove('on');
 
-// 6. DRAWING
+// 6. INTERACTION (DRAGGING)
+cM.addEventListener('mousedown', e => { dragging=true; dx=e.clientX; dy=e.clientY; dtx=tx; dty=ty; });
+window.addEventListener('mousemove', e => {
+    if(dragging){
+        tx = dtx + (e.clientX - dx);
+        ty = dty + (e.clientY - dy);
+        drawAll();
+    }
+});
+window.addEventListener('mouseup', () => dragging=false);
+
+// 7. DRAWING ENGINE
 function resize(){
     W=window.innerWidth; H=window.innerHeight;
-    [cS,cM,cC,cX].forEach(c=>{ 
-        if(c){
-            c.width=W*DPR; c.height=H*DPR; 
-            c.style.width=W+'px'; c.style.height=H+'px'; 
-            c.getContext('2d').scale(DPR,DPR);
-        }
+    [cS,cM,cC].forEach(c => {
+        c.width=W*DPR; c.height=H*DPR; 
+        c.style.width=W+'px'; c.style.height=H+'px'; 
+        c.getContext('2d').scale(DPR,DPR);
     });
-    mkStars();
-    drawMap();
+    mkStars(); drawAll();
 }
 
-function mkStars(){ stars=[]; for(let i=0;i<200;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*.8,a:Math.random()}); }
+function mkStars(){ stars=[]; for(let i=0;i<150;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random(),a:Math.random()}); }
 function drawStars(){ ctxS.clearRect(0,0,W,H); stars.forEach(s=>{ ctxS.beginPath(); ctxS.arc(s.x,s.y,s.r,0,Math.PI*2); ctxS.fillStyle=`rgba(255,255,255,${s.a})`; ctxS.fill(); }); }
 
+function drawAll(){
+    drawMap();
+    ctxC.clearRect(0,0,W,H);
+    CITIES.forEach(c => {
+        const [px,py] = proj(c.lon, c.lat);
+        ctxC.beginPath(); ctxC.arc(px,py,4,0,Math.PI*2); ctxC.fillStyle='#5DDCB8'; ctxC.fill();
+    });
+}
+
 function drawMap(){
-    if(!geoFeatures.length) return; // FIX: Don't draw if data isn't ready
+    if(!geoFeatures.length) return;
     ctxM.clearRect(0,0,W,H);
     ctxM.strokeStyle='rgba(93,220,184,0.3)'; ctxM.lineWidth=1/sc;
     geoFeatures.forEach(feat => {
-        if(feat.geometry.type === 'Polygon'){
-            drawPolygon(feat.geometry.coordinates);
-        } else if (feat.geometry.type === 'MultiPolygon'){
-            feat.geometry.coordinates.forEach(drawPolygon);
-        }
+        const drawPoly = (rings) => {
+            rings.forEach(ring => {
+                ctxM.beginPath();
+                ring.forEach((p, i) => {
+                    const [x, y] = proj(p[0], p[1]);
+                    if(i===0) ctxM.moveTo(x, y); else ctxM.lineTo(x, y);
+                });
+                ctxM.stroke();
+            });
+        };
+        if(feat.geometry.type === 'Polygon') drawPoly(feat.geometry.coordinates);
+        else if(feat.geometry.type === 'MultiPolygon') feat.geometry.coordinates.forEach(drawPoly);
     });
 }
 
-function drawPolygon(rings){
-    rings.forEach(ring => {
-        ctxM.beginPath();
-        ring.forEach((p, i) => {
-            const [x, y] = proj(p[0], p[1]);
-            if(i===0) ctxM.moveTo(x, y); else ctxM.lineTo(x, y);
-        });
-        ctxM.stroke();
-    });
-}
-
-// 7. BOOT
+// 8. BOOT
 async function boot(){
     window.addEventListener('resize', resize);
     resize();
     
-    // IP Location
     try {
-        const res = await fetch('https://ipapi.co/json/');
-        const data = await res.json();
-        userCity = data.city; userCountry = data.country_name;
+        const loc = await fetch('https://ipapi.co/json/').then(r => r.json());
+        userCity = loc.city; userCountry = loc.country_name;
     } catch(e) {}
 
-    // Map Data
     try {
-        const res = await fetch('https://raw.githubusercontent.com/datasets/geo-boundaries-world-110m/master/countries.geojson');
-        const data = await res.json();
-        geoFeatures = data.features;
-        drawMap();
-    } catch(e) { console.error("Map load failed"); }
+        const mapData = await fetch('https://raw.githubusercontent.com/datasets/geo-boundaries-world-110m/master/countries.geojson').then(r => r.json());
+        geoFeatures = mapData.features;
+        drawAll();
+    } catch(e) {}
 
     document.getElementById('loader').classList.add('fade');
     setTimeout(()=>document.getElementById('loader').style.display='none', 950);
     
-    requestAnimationFrame(function loop(){
-        drawStars();
-        CITIES.forEach(c => {
-            const [px,py] = proj(c.lon, c.lat);
-            ctxC.beginPath(); ctxC.arc(px,py,3,0,Math.PI*2); ctxC.fillStyle='#5DDCB8'; ctxC.fill();
-        });
-        requestAnimationFrame(loop);
-    });
+    setInterval(drawStars, 100);
 }
 
 boot();
