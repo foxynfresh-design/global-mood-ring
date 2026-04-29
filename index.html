@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Global Mood Ring — Collective Emotional Cartography</title>
-  <meta name="description" content="Broadcast your mood to the world. Watch the planet pulse with collective emotion in real time." />
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,7 +11,6 @@
 </head>
 <body>
 
-  <!-- ══════════════════════ LOADER -->
   <div id="loader">
     <div class="loader-inner">
       <div class="loader-orb"></div>
@@ -26,19 +24,11 @@
     </div>
   </div>
 
-  <!-- ══════════════════════ APP -->
   <div id="app" class="hidden">
-
-    <!-- Ambient background bleed -->
     <div id="mood-bleed"></div>
-
-    <!-- Three.js canvas -->
     <canvas id="globe-canvas"></canvas>
-
-    <!-- Particle burst canvas -->
     <canvas id="particle-canvas"></canvas>
 
-    <!-- ─── HEADER ─── -->
     <header id="header">
       <div class="header-left">
         <div class="logo-mark">
@@ -46,8 +36,6 @@
             <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
             <circle cx="16" cy="16" r="8.5" stroke="currentColor" stroke-width="1.5" opacity="0.65"/>
             <circle cx="16" cy="16" r="3.5" fill="currentColor"/>
-            <line x1="2" y1="16" x2="30" y2="16" stroke="currentColor" stroke-width="0.7" opacity="0.25"/>
-            <line x1="16" y1="2" x2="16" y2="30" stroke="currentColor" stroke-width="0.7" opacity="0.25"/>
           </svg>
         </div>
         <div class="logo-text">
@@ -72,19 +60,16 @@
       </div>
     </header>
 
-    <!-- ─── GLOBE LABEL ─── -->
     <div id="globe-label">
       <span id="globe-emoji">◌</span>
       <span id="globe-mood-text">NEUTRAL</span>
     </div>
 
-    <!-- ─── WORLD MOOD BADGE (top-left of globe area) ─── -->
     <div id="world-score" class="glass-chip">
       <p class="ws-label">DOMINANT MOOD</p>
       <p id="ws-dominant">—</p>
     </div>
 
-    <!-- ─── TICKER ─── -->
     <aside id="ticker-panel" class="glass-panel">
       <div class="panel-hd">
         <span class="panel-title">⚡ LIVE SIGNALS</span>
@@ -93,7 +78,6 @@
       <ul id="ticker-list"></ul>
     </aside>
 
-    <!-- ─── DISTRIBUTION ─── -->
     <div id="dist-panel" class="glass-panel">
       <div class="panel-hd">
         <span class="panel-title">MOOD DISTRIBUTION</span>
@@ -101,81 +85,42 @@
       <div id="dist-bars"></div>
     </div>
 
-    <!-- ─── INPUT PANEL ─── -->
     <div id="input-panel" class="glass-panel">
-      <p class="panel-title center-text">BROADCAST YOUR MOOD TO THE WORLD</p>
-
-      <!-- Autocomplete pill suggestions -->
+      <p class="panel-title center-text">BROADCAST YOUR MOOD</p>
       <div id="suggestions"></div>
-
       <div class="input-row">
         <div class="input-wrap">
-          <input
-            id="mood-input"
-            type="text"
-            maxlength="32"
-            placeholder="Type a mood word…"
-            oninput="window.onMoodInput(this.value)"
-            autocomplete="off"
-            spellcheck="false"
-          />
+          <input id="mood-input" type="text" maxlength="32" placeholder="How are you feeling?" oninput="window.onMoodInput(this.value)" autocomplete="off" />
           <span id="mood-chip"></span>
         </div>
-        <button id="btn-send" onclick="window.submitMood()">
-          SEND
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <button id="btn-send" onclick="window.submitMood()">SEND SIGNAL</button>
       </div>
-
-      <div id="location-row">
-        <div class="loc-wrap">
-          <span class="loc-icon">📍</span>
-          <input id="city-input" type="text" placeholder="City" />
-        </div>
-        <div class="loc-wrap">
-          <span class="loc-icon">🌍</span>
-          <input id="country-input" type="text" placeholder="Country" />
-        </div>
-        <button id="btn-locate" onclick="window.detectLocation()" title="Auto-detect my location">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
-          </svg>
-        </button>
-      </div>
-
-      <p id="input-hint">Your signal joins <span id="hint-count">thousands</span> of voices shaping the planet's mood</p>
+      <p id="input-hint">Your signal joins <span id="hint-count">0</span> voices worldwide</p>
     </div>
 
-    <!-- ─── SHARE URL BADGE ─── -->
     <div id="share-badge" class="glass-chip hidden">
       <span id="share-url-text"></span>
       <button id="share-copy-btn" onclick="window.copyShareUrl()">Copy link</button>
     </div>
 
-    <!-- ─── AURA CARD (offscreen capture) ─── -->
     <div id="aura-card">
       <div id="aura-bg"></div>
       <div class="aura-grain"></div>
       <div class="aura-content">
         <p class="aura-eyebrow">MY GLOBAL MOOD SIGNAL</p>
-        <p class="aura-word"  id="aura-word">—</p>
-        <p class="aura-type"  id="aura-type">—</p>
-        <p class="aura-loc"   id="aura-loc">—</p>
+        <p class="aura-word" id="aura-word">—</p>
+        <p class="aura-type" id="aura-type">—</p>
+        <p class="aura-loc" id="aura-loc">—</p>
         <div class="aura-line"></div>
-        <p class="aura-foot">globalmoodnring.app · <span id="aura-date"></span></p>
+        <p class="aura-foot">globalmoodring.app · <span id="aura-date"></span></p>
       </div>
     </div>
 
-    <!-- ─── TOAST ─── -->
     <div id="toast"></div>
+  </div>
 
-  </div><!-- /#app -->
-
-  <!-- ══════════════════════ LIBS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="script.js"></script>
