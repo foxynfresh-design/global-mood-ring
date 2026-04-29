@@ -29,9 +29,27 @@ body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-
 input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 14px; color: white; border-radius: 10px; outline: none; }
 #btn-send { background: var(--accent); border: none; padding: 0 24px; border-radius: 10px; font-weight: bold; cursor: pointer; color: #030610; }
 
-#aura-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; }
-#aura-card { width: 420px; text-align: center; position: relative; }
-#aura-word { font-family: 'Cinzel', serif; font-size: 3.5rem; color: var(--accent); margin: 10px 0; }
+#aura-overlay {
+  position: fixed;
+  bottom: 30px;
+  left: 30px; /* Moved to corner */
+  width: 320px;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+#aura-card {
+  padding: 20px;
+  text-align: left;
+  border-left: 4px solid var(--accent);
+}
+
+#aura-word { font-size: 2rem; margin: 5px 0; }
+
+@keyframes ripple {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(4); opacity: 0; }
+}
 .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; }
 
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
@@ -40,3 +58,5 @@ input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--bor
 #loader.fade-out { opacity: 0; pointer-events: none; }
 .loader-orb { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 30px var(--accent); animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
+
+
