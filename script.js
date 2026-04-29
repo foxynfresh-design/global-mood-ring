@@ -5,145 +5,118 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const db = supabase.createClient(supabaseUrl, supabaseKey);
 
 let userCity = "Global", userCountry = "Earth";
-let globeScene, globeCamera, globeRenderer, globeMesh, glowMesh;
+let scene, camera, renderer, globe, glow;
 let actx, mGain, drones = [], audioOn = false, curMood = 'calm';
-let stars = [];
 
 const MOODS = {
-  joy: { h: '#F7C948', note: 261.63, poetic: "Joy ripples outward like light..." },
-  love: { h: '#FF6B8A', note: 293.66, poetic: "Hearts beating in unison..." },
-  hope: { h: '#7EC8FF', note: 329.63, poetic: "A silver thread of hope..." },
-  calm: { h: '#5DDCB8', note: 349.23, poetic: "The world holds its breath..." },
-  sad: { h: '#7B9FC4', note: 220.00, poetic: "Even grief is a kind of love..." }
+  joy: { h: '#F7C948', note: 261.63 },
+  love: { h: '#FF6B8A', note: 293.66 },
+  hope: { h: '#7EC8FF', note: 329.63 },
+  calm: { h: '#5DDCB8', note: 349.23 },
+  sad: { h: '#7B9FC4', note: 220.00 }
 };
 
-// 1. GLOBE INITIALIZATION (Broad Compatibility)
+// 1. GLOBE INITIALIZATION
 function initGlobe() {
   const wrap = document.getElementById('globe-wrap');
-  if(!wrap) return;
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 3;
 
-  globeScene = new THREE.Scene();
-  globeCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  globeCamera.position.z = 2.8;
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  wrap.appendChild(renderer.domElement);
 
-  globeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  globeRenderer.setSize(window.innerWidth, window.innerHeight);
-  globeRenderer.setPixelRatio(window.devicePixelRatio);
-  wrap.appendChild(globeRenderer.domElement);
+  // AESTHETIC: Glow-Grid Globe (No external textures needed)
+  const geo = new THREE.SphereGeometry(1, 48, 48);
+  const mat = new THREE.MeshPhongMaterial({ 
+    color: 0x5DDCB8, 
+    emissive: 0x112233, 
+    wireframe: true, 
+    transparent: true, 
+    opacity: 0.2 
+  });
+  globe = new THREE.Mesh(geo, mat);
+  scene.add(globe);
 
-  const geo = new THREE.SphereGeometry(1, 64, 64);
-  const textureLoader = new THREE.TextureLoader();
-  
-  // Use a reliable dark earth texture
-  const earthTexture = textureLoader.load(
-    'https://unpkg.com/three-globe/example/img/earth-dark.jpg',
-    () => { console.log("Globe texture ready."); },
-    undefined,
-    () => { makeWireframeGlobe(); }
-  );
+  // Aura Glow
+  const glowGeo = new THREE.SphereGeometry(1.1, 48, 48);
+  const glowMat = new THREE.MeshBasicMaterial({ 
+    color: 0x5DDCB8, 
+    transparent: true, 
+    opacity: 0.05, 
+    side: THREE.BackSide 
+  });
+  glow = new THREE.Mesh(glowGeo, glowMat);
+  scene.add(glow);
 
-  const mat = new THREE.MeshPhongMaterial({ map: earthTexture, shininess: 5 });
-  globeMesh = new THREE.Mesh(geo, mat);
-  globeScene.add(globeMesh);
-
-  // Atmosphere glow
-  const glowGeo = new THREE.SphereGeometry(1.05, 64, 64);
-  const glowMat = new THREE.MeshBasicMaterial({ color: 0x5DDCB8, transparent: true, opacity: 0.1, side: THREE.BackSide });
-  glowMesh = new THREE.Mesh(glowGeo, glowMat);
-  globeScene.add(glowMesh);
-
-  const ambient = new THREE.AmbientLight(0xffffff, 0.4);
-  globeScene.add(ambient);
-  const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-  sun.position.set(5, 3, 5);
-  globeScene.add(sun);
+  const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+  scene.add(ambient);
 
   (function animate() {
     requestAnimationFrame(animate);
-    if(globeMesh) globeMesh.rotation.y += 0.0015;
-    if(glowMesh) glowMesh.rotation.y += 0.0015;
-    globeRenderer.render(globeScene, globeCamera);
-    drawStars();
+    globe.rotation.y += 0.001;
+    renderer.render(scene, camera);
   })();
 }
 
-function makeWireframeGlobe() {
-    if(!globeMesh) return;
-    globeMesh.material = new THREE.MeshPhongMaterial({ color: 0x112233, wireframe: true });
+// 2. AUDIO (Fixed for browser security)
+function initAudio() {
+  if (actx) return;
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  mGain = actx.createGain(); 
+  mGain.gain.value = 0; 
+  mGain.connect(actx.destination);
 }
 
-// 2. LOGIC & DATA
-window.handleTyping = (val) => {
-    const w = val.toLowerCase().trim();
-    let detected = 'calm';
-    if(w.includes('happy') || w.includes('joy')) detected = 'joy';
-    if(w.includes('sad')) detected = 'sad';
-    if(w.includes('love')) detected = 'love';
-    document.getElementById('send-btn').style.background = MOODS[detected].h;
-    if(glowMesh) glowMesh.material.color.set(MOODS[detected].h);
+window.toggleAudio = () => {
+  initAudio();
+  audioOn = !audioOn;
+  if (audioOn) {
+    actx.resume();
+    mGain.gain.setTargetAtTime(0.5, actx.currentTime, 1);
+  } else {
+    mGain.gain.setTargetAtTime(0, actx.currentTime, 1);
+  }
+  document.getElementById('snd-btn').classList.toggle('on', audioOn);
 };
 
-async function fetchStats() {
-    const { data } = await db.from('mood_signals').select('mood_type');
-    if (data) {
-        const counts = { JOY: 0, CALM: 0, HOPE: 0 };
-        data.forEach(r => { if(counts[r.mood_type.toUpperCase()] !== undefined) counts[r.mood_type.toUpperCase()]++; });
-        const b = document.getElementById('bars'); 
-        if(b) {
-            b.innerHTML = '';
-            Object.entries(counts).forEach(([m, c]) => {
-                const row = document.createElement('div'); row.className = 'bar-row';
-                row.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:9px; margin-bottom:3px"><span>${m}</span><span>${c}</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(c, 100)}%"></div></div>`;
-                b.appendChild(row);
-            });
-        }
-    }
-}
+// 3. UI LOGIC
+window.handleTyping = (val) => {
+  const w = val.toLowerCase();
+  let mood = 'calm';
+  if (w.includes('happy')) mood = 'joy';
+  if (w.includes('sad')) mood = 'sad';
+  
+  const col = new THREE.Color(MOODS[mood].h);
+  globe.material.color = col;
+  glow.material.color = col;
+};
 
-// 3. STARS CANVAS
-const cS = document.getElementById('c-stars');
-const ctxS = cS.getContext('2d');
-function resizeStars() {
-    cS.width = window.innerWidth; cS.height = window.innerHeight;
-    stars = [];
-    for(let i=0; i<150; i++) stars.push({x: Math.random()*cS.width, y: Math.random()*cS.height, r: Math.random()*1.2, a: Math.random()});
-}
-function drawStars() {
-    ctxS.clearRect(0, 0, cS.width, cS.height);
-    stars.forEach(s => {
-        ctxS.beginPath(); ctxS.arc(s.x, s.y, s.r, 0, Math.PI*2);
-        ctxS.fillStyle = `rgba(255,255,255,${s.a})`; ctxS.fill();
-    });
-}
+window.submitMood = () => {
+  document.getElementById('overlay').classList.add('on');
+};
 
-// 4. FAIL-SAFE BOOT
-async function boot() {
+window.closeOverlay = () => {
+  document.getElementById('overlay').classList.remove('on');
+};
+
+// 4. BOOT
+function boot() {
   console.log("App booting...");
-  resizeStars();
-
-  // Force loader hide after max 2 seconds
+  initGlobe();
+  
+  // Force loader hide
   setTimeout(() => {
-    const loader = document.getElementById('loader');
-    if(loader && loader.style.display !== 'none') {
-        loader.classList.add('fade');
-        setTimeout(() => loader.style.display = 'none', 900);
-    }
-  }, 2000);
-
-  try { initGlobe(); } catch(e) { console.error("Globe failed:", e); }
-  fetchStats().catch(() => {});
-
-  fetch('https://ipapi.co/json/').then(r => r.json()).then(loc => {
-    userCity = loc.city || 'Global';
-  }).catch(() => {});
+    document.getElementById('loader').classList.add('fade');
+    setTimeout(() => document.getElementById('loader').style.display = 'none', 900);
+  }, 1000);
 }
 
 window.addEventListener('load', boot);
 window.addEventListener('resize', () => {
-    if(globeCamera) { globeCamera.aspect = window.innerWidth / window.innerHeight; globeCamera.updateProjectionMatrix(); }
-    if(globeRenderer) globeRenderer.setSize(window.innerWidth, window.innerHeight);
-    resizeStars();
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-window.submitMood = () => { document.getElementById('overlay').classList.add('on'); };
-window.closeOverlay = () => { document.getElementById('overlay').classList.remove('on'); };
