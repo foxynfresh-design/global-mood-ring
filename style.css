@@ -104,9 +104,15 @@ body {
 }
 #mood-in::placeholder { color: rgba(255,255,255,0.2); }
 #send-btn {
-  background: var(--mc); border: none; padding: 0 26px;
-  font-family: 'Bebas Neue'; font-size: 14px; letter-spacing: 2px;
-  cursor: pointer; color: #020810; transition: opacity 0.2s;
+  background: var(--mc);
+  border: none;
+  padding: 0 26px;
+  font-family: 'Bebas Neue';
+  font-size: 14px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  color: #020810;
+  transition: background 0.5s ease; /* Smooth color shift */
 }
 #send-btn:hover { opacity: 0.85; }
 #input-hint { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
