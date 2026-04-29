@@ -72,10 +72,18 @@
 <!-- INPUT BAR -->
 <div class="ui" id="input-bar">
   <div id="irow">
-    <input id="mood-in" type="text" placeholder="TYPE ONE WORD..." maxlength="28" autocomplete="off" onkeydown="if(event.key==='Enter') submitMood()">
+    <input 
+        id="mood-in" 
+        type="text" 
+        placeholder="TYPE ONE WORD..." 
+        maxlength="28" 
+        autocomplete="off" 
+        oninput="handleTyping(this.value)" 
+        onkeydown="if(event.key==='Enter') submitMood()"
+    >
     <button id="send-btn" onclick="submitMood()">SEND</button>
   </div>
-  <div id="input-hint">Express how the world feels right now</div>
+  <div id="input-hint">The globe reacts to your words in real-time</div>
 </div>
 
 <!-- OVERLAY / SHARE -->
