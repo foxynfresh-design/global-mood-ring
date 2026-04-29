@@ -170,3 +170,18 @@ async function boot(){
 }
 
 boot();
+
+window.shareMood = () => {
+    const area = document.getElementById('capture-area');
+    if (!area) return;
+    
+    html2canvas(area, {
+        backgroundColor: "#020810",
+        scale: 2 // Makes the image high-resolution for social media!
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Global-Mood-${userCity}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+};
