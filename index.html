@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -56,7 +56,7 @@
 
 <div class="ui" id="input-bar">
   <div id="irow">
-    <input id="mood-in" type="text" placeholder="TYPE ONE WORD..." maxlength="28" oninput="handleTyping(this.value)">
+    <input id="mood-in" type="text" placeholder="TYPE ONE WORD..." maxlength="28" oninput="handleTyping(this.value)" onkeydown="if(event.key==='Enter') submitMood()">
     <button id="send-btn" onclick="submitMood()">SEND</button>
   </div>
 </div>
