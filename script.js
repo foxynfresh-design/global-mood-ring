@@ -31,7 +31,7 @@ window.toggleAudio = function() {
     }
 };
 
-/* ── Globe ── */
+/* ── Globe (Slower Rotation + High Fidelity) ── */
 function initGlobe() {
     const canvas = document.getElementById('globe-canvas');
     scene = new THREE.Scene();
@@ -45,6 +45,7 @@ function initGlobe() {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.3; // SLOWER rotation for better look
 
     const loader = new THREE.TextureLoader();
     const dayTex = loader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
@@ -66,45 +67,66 @@ function initGlobe() {
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
+    
+    // Update Signal Dots
     signalDots = signalDots.filter(d => {
         d.life -= 0.005;
         d.mesh.material.opacity = d.life;
+        d.mesh.scale.setScalar(1 + (1 - d.life) * 2); // Pulse growth effect
         if (d.life <= 0) { scene.remove(d.mesh); return false; }
         return true;
     });
+    
     renderer.render(scene, camera);
 }
 
-/* ── UI Logic ── */
-async function fetchStats() {
+/* ── REAL-TIME LOGIC ── */
+function subscribeRealtime() {
     if (!db) return;
-    const { data } = await db.from('mood_signals').select('word, mood_type, city').order('id', { ascending: false }).limit(10);
-    if (data) renderStats(data);
+    db.channel('mood_signals_realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mood_signals' }, payload => {
+          const s = payload.new;
+          // 1. Add to Ticker
+          addTickerItem(s);
+          // 2. Trigger Globe Effect at signal coordinates
+          // If the entry has lat/lng, use it; otherwise use Aliso Viejo fallback
+          const lat = s.lat || 33.57;
+          const lng = s.lng || -117.73;
+          addSignalDot(lat, lng, '#4af0c8');
+      })
+      .subscribe();
 }
 
-function renderStats(data) {
+function addTickerItem(s) {
     const list = document.getElementById('ticker-list');
-    list.innerHTML = '';
-    data.forEach(s => {
-        const li = document.createElement('li');
-        li.className = 'ticker-item';
-        li.textContent = `${s.word} · ${s.city}`;
-        list.appendChild(li);
-    });
+    const li = document.createElement('li');
+    li.className = 'ticker-item';
+    li.textContent = `${s.word} · ${s.city}`;
+    list.prepend(li);
+    if (list.children.length > 8) list.lastChild.remove();
 }
 
 window.submitMood = async function() {
     const word = document.getElementById('mood-input').value.trim();
     if (!word) return;
 
-    addSignalDot(userLat, userLng, '#4af0c8');
+    // Show your own Aura Card locally
     document.getElementById('aura-word').textContent = word.toUpperCase();
     document.getElementById('aura-loc').textContent = `${userCity}, ${userCountry}`;
     document.getElementById('aura-overlay').classList.remove('hidden');
 
-    if (db) await db.from('mood_signals').insert([{ word, city: userCity, country: userCountry, mood_type: 'neutral' }]);
+    // Insert into DB (Real-time listener will handle the dot/ticker)
+    if (db) {
+        await db.from('mood_signals').insert([{ 
+            word, 
+            city: userCity, 
+            country: userCountry, 
+            lat: userLat, 
+            lng: userLng,
+            mood_type: 'neutral' 
+        }]);
+    }
     document.getElementById('mood-input').value = '';
-    fetchStats();
 };
 
 window.closeAura = function() { document.getElementById('aura-overlay').classList.add('hidden'); };
@@ -113,20 +135,29 @@ function addSignalDot(lat, lng, color) {
     const phi = (90 - lat) * (Math.PI / 180);
     const theta = (lng + 180) * (Math.PI / 180);
     const pos = new THREE.Vector3(-1.02 * Math.sin(phi) * Math.cos(theta), 1.02 * Math.cos(phi), 1.02 * Math.sin(phi) * Math.sin(theta));
-    const m = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 }));
+    
+    // Glowing Dot Mesh
+    const m = new THREE.Mesh(
+        new THREE.SphereGeometry(0.04, 16, 16), 
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 })
+    );
+    
+    // Apply current globe rotation so dot appears in correct physical spot
     m.position.copy(pos);
-    scene.add(m);
+    globeMesh.add(m); // Attaching to globeMesh ensures it rotates WITH the earth
+    
     signalDots.push({ mesh: m, life: 1.0 });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
     initGlobe();
     db = supabase.createClient(SB_URL, SB_ANON);
-    fetchStats();
+    subscribeRealtime();
 
+    // Geolocation Fallback
     fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
         userCity = d.city || userCity; userLat = d.latitude || userLat; userLng = d.longitude || userLng;
-    }).catch(() => console.log("CORS/Rate limit fallback activated."))
+    }).catch(() => console.log("Using Fallback Coordinates."))
     .finally(() => {
         setTimeout(() => {
             document.getElementById('loader').classList.add('fade-out');
