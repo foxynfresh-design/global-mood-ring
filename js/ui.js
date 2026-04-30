@@ -100,11 +100,12 @@
   UI.updateStats = function () {
     const totalEl = document.getElementById('stat-total');
     const domEl   = document.getElementById('stat-dominant');
+    const state   = GMR.state || {};
     if (totalEl) {
-      totalEl.textContent = UI._formatNum(GMR.state.totalSignals || 0);
+      totalEl.textContent = UI._formatNum(state.totalSignals || 0);
     }
     if (domEl) {
-      const dom = GMR.state.dominantType || 'serenity';
+      const dom = state.dominantType || 'serenity';
       const col = GMR.TYPE_COLOR[dom] || '#4af0c8';
       domEl.textContent  = dom.toUpperCase();
       domEl.style.color  = col;
@@ -214,7 +215,7 @@
      VIEW MODE (globe ↔ map)
      ══════════════════════════════════════════════════════ */
   UI.setViewMode = function (mode) {
-    GMR.state.viewMode = mode;
+    if (GMR.state) GMR.state.viewMode = mode;
     const globeWrap = document.getElementById('globe-wrap');
     const mapWrap   = document.getElementById('map-wrap');
     const btnGlobe  = document.getElementById('btn-globe');
@@ -315,7 +316,7 @@
     }
 
     /* Initial mood display */
-    UI.updateGiantMood(GMR.state.dominantType || 'serenity');
+    UI.updateGiantMood((GMR.state && GMR.state.dominantType) || 'serenity');
     UI.updateStats();
 
     console.log('[GMR UI] Module initialized');

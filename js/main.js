@@ -145,6 +145,7 @@
     }
 
     /* Update global state */
+    if (!GMR.state) GMR.state = { totalSignals: 0, moodCounts: {}, dominantType: 'serenity' };
     GMR.state.totalSignals++;
     GMR.state.moodCounts[moodType] = (GMR.state.moodCounts[moodType] || 0) + 1;
     GMR.state.currentMoodType = moodType;
