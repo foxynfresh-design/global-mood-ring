@@ -272,6 +272,22 @@
   MAIN.boot = function () {
     console.log('[GMR] Booting…');
 
+    /* ── Ensure GMR.state exists regardless of config.js version ── */
+    if (!GMR.state) {
+      GMR.state = {
+        viewMode:        'globe',
+        currentMoodType: 'serenity',
+        dominantType:    'serenity',
+        totalSignals:    0,
+        moodCounts:      { serenity:0, joy:0, love:0, neutral:0, sadness:0, anger:0, fear:0, surprise:0 },
+        signalQueue:     [],
+        submitting:      false,
+      };
+    }
+    /* Ensure moodCounts exists */
+    GMR.state.moodCounts = GMR.state.moodCounts || {};
+
+
     /* ① Core modules */
     GMR.ui       && GMR.ui.init();
     GMR.streaks  && GMR.streaks.init();
