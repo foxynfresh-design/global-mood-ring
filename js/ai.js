@@ -17,9 +17,17 @@
   const MODEL = 'claude-sonnet-4-20250514';
 
   async function callClaude(system, userMsg, maxTokens = 300) {
-    const res = await fetch(API, {
+    // Requires GMR.AI_KEY (direct) or GMR.AI_PROXY_URL (backend proxy)
+    const apiKey   = GMR.AI_KEY || '';
+    const endpoint = GMR.AI_PROXY_URL || (apiKey ? API : null);
+    if (!endpoint) throw new Error('No API key or proxy configured');
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiKey) { headers['x-api-key'] = apiKey; headers['anthropic-version'] = '2023-06-01'; }
+
+    const res = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         model: MODEL,
         max_tokens: maxTokens,
@@ -27,6 +35,7 @@
         messages: [{ role: 'user', content: userMsg }],
       }),
     });
+    if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
     return data.content.map(c => c.text || '').join('');
   }
@@ -90,7 +99,7 @@ Reply ONLY with valid JSON: {"type":"<mood type>","emoji":"<single emoji>","colo
     const top3 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const dominant = top3[0]?.[0] || 'serenity';
     const total = GMR.state.totalSignals || 0;
-    const recentCities = GMR.WORLD_CITIES.slice(0, 5).map(c => `${c.name} (${c.mood})`).join(', ');
+    const recentCities = (GMR.WORLD_CITIES || []).slice(0, 5).map(c => `${c.name} (${c.mood})`).join(', ');
 
     panel.textContent = 'Tuning in…';
     panel.style.opacity = '0.5';
@@ -170,7 +179,8 @@ Historical note: Sundays tend toward serenity. Mondays often spike anxiety. Frid
       );
 
       if (result) {
-        const col = GMR.TYPE_COLOR[result.mood] || '#4af0c8';
+        const _tc = GMR.TYPE_COLOR || {};
+        const col = _tc[result.mood] || '#4af0c8';
         panel.innerHTML = `
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
             <span style="font-family:'Bebas Neue',cursive;font-size:28px;color:${col};letter-spacing:.08em">${result.mood.toUpperCase()}</span>
