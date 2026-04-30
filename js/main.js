@@ -184,8 +184,9 @@
 
   MAIN._pickCity = function (moodType) {
     /* Prefer city matching mood, fallback random */
-    const matches = GMR.WORLD_CITIES.filter(c => c.mood === moodType);
-    const pool = matches.length > 0 ? matches : GMR.WORLD_CITIES;
+    const _wc = GMR.WORLD_CITIES || [{name:'Earth',country:'',lat:0,lon:0,mood:moodType,sentence:'A signal arrives.'}];
+    const matches = _wc.filter(c => c.mood === moodType);
+    const pool = matches.length > 0 ? matches : _wc;
     return pool[Math.floor(Math.random() * pool.length)];
   };
 
@@ -233,7 +234,7 @@
 
   MAIN._handleIncomingSignal = function (signal) {
     if (!signal || !signal.mood_type) return;
-    const city = GMR.WORLD_CITIES.find(c => c.name === signal.city) || MAIN._pickCity(signal.mood_type);
+    const city = (GMR.WORLD_CITIES || []).find(c => c.name === signal.city) || MAIN._pickCity(signal.mood_type);
     const moodObj = {
       t: signal.mood_type,
       e: mEmoji(signal.mood_type) || '◉',
