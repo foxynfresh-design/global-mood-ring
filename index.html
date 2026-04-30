@@ -1,1561 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Global Mood Ring — Collective Emotional Cartography</title>
-<meta name="description" content="Broadcast your mood to the world. Watch the planet pulse with collective emotion in real time."/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Rajdhani:wght@300;400;500;600;700&family=Tenor+Sans&display=swap" rel="stylesheet"/>
-<style>
-/* ══════════════════════════════════════════════════════════
-   GLOBAL MOOD RING  ·  EPIC MERGED v3.0
-   ══════════════════════════════════════════════════════════ */
-:root {
-  --bg:       #030610;
-  --g-bg:     rgba(7,12,32,0.72);
-  --g-border: rgba(120,180,255,0.10);
-  --g-blur:   20px;
-  --accent:   #4af0c8;
-  --accent2:  #7b5ef8;
-  --text-hi:  #eaf0ff;
-  --text-mid: #7a8fb5;
-  --text-lo:  #2e3d5e;
-  --mood:     #4af0c8;
-  --mood-g:   #4af0c888;
-  --panel-w:  230px;
-  --radius:   16px;
-  --f-display:'Cinzel',serif;
-  --f-bebas:  'Bebas Neue',cursive;
-  --f-body:   'Rajdhani',sans-serif;
-  --f-poetic: 'Cormorant Garamond',serif;
-  --f-ui:     'Tenor Sans',sans-serif;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text-hi);font-family:var(--f-body);letter-spacing:.03em}
-button{cursor:pointer;font-family:var(--f-body)}
-input{font-family:var(--f-body)}
-ul{list-style:none}
-.hidden{display:none!important}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Global Mood Ring — The Emotional Pulse of Earth</title>
+  <meta name="description" content="Real-time emotional signal map. Send a mood word. Watch it land on the globe." />
+  <meta property="og:title" content="Global Mood Ring" />
+  <meta property="og:description" content="The planet is feeling something right now." />
 
-/* ── Glassmorphism ── */
-.glass-panel{background:var(--g-bg);border:1px solid var(--g-border);backdrop-filter:blur(var(--g-blur));-webkit-backdrop-filter:blur(var(--g-blur));border-radius:var(--radius)}
-.glass-chip{background:rgba(7,12,32,.8);border:1px solid var(--g-border);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:40px}
-.panel-title{font-family:var(--f-display);font-size:9.5px;letter-spacing:.22em;color:var(--text-mid);text-transform:uppercase}
-.panel-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.center-text{text-align:center;margin-bottom:12px}
-.count-badge{font-size:10px;font-weight:700;color:var(--mood);background:rgba(74,240,200,.1);border:1px solid rgba(74,240,200,.2);border-radius:20px;padding:1px 8px;transition:color .4s,border-color .4s,background .4s}
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Tenor+Sans&display=swap" rel="stylesheet" />
 
-/* ══ LOADER ══════════════════════════════════════════════ */
-#loader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .7s ease,visibility .7s ease}
-#loader.fade-out{opacity:0;visibility:hidden;pointer-events:none}
-.loader-inner{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center}
-.loader-orb{width:28px;height:28px;border-radius:50%;background:var(--accent);box-shadow:0 0 30px var(--accent),0 0 80px var(--accent);animation:orbPulse 2s ease-in-out infinite}
-@keyframes orbPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.6}}
-.loader-ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid transparent;transform:translate(-50%,-50%);animation:spinRing 3s linear infinite}
-.r1{width:90px;height:90px;border-top-color:var(--accent);border-right-color:var(--accent);animation-duration:2.5s}
-.r2{width:140px;height:140px;border-top-color:var(--accent2);border-left-color:var(--accent2);animation-duration:4s;animation-direction:reverse;opacity:.7}
-.r3{width:200px;height:200px;border-bottom-color:#ffd166;border-left-color:#ffd166;animation-duration:6s;opacity:.35}
-@keyframes spinRing{to{transform:translate(-50%,-50%) rotate(360deg)}}
-.loader-texts{position:absolute;bottom:-64px;left:50%;transform:translateX(-50%);text-align:center;white-space:nowrap}
-.loader-title{font-family:var(--f-bebas);font-size:22px;letter-spacing:.35em;color:var(--accent);margin-bottom:6px}
-.loader-sub{font-size:11px;color:var(--text-mid);letter-spacing:.12em;font-family:var(--f-ui)}
-
-/* ══ APP SHELL ══════════════════════════════════════════ */
-#app{width:100vw;height:100vh;position:relative;overflow:hidden}
-#mood-bleed{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,var(--mood) 0%,transparent 70%);opacity:.04;pointer-events:none;transition:background 1.5s ease,opacity 1s;z-index:0}
-#aurora{position:absolute;inset:0;pointer-events:none;opacity:.14;transition:background 3s ease;z-index:0}
-#globe-canvas,#particle-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-#globe-canvas{z-index:1}
-#particle-canvas{z-index:5;pointer-events:none}
-#map-overlay{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .8s ease}
-#map-overlay.visible{opacity:1;pointer-events:all}
-#map-svg{position:absolute;will-change:transform;transform-origin:0 0;cursor:grab}
-#map-svg.grabbing{cursor:grabbing}
-
-/* ══ HEADER ══════════════════════════════════════════════ */
-#header{position:absolute;top:0;left:0;right:0;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:linear-gradient(to bottom,rgba(3,6,16,.95) 0%,transparent 100%);z-index:20}
-.header-left{display:flex;align-items:center;gap:12px}
-.header-center{position:absolute;left:50%;transform:translateX(-50%)}
-.header-right{display:flex;align-items:center;gap:14px}
-.logo-mark{color:var(--mood);transition:color .5s}
-.logo-title{font-family:var(--f-bebas);font-size:20px;letter-spacing:.15em;line-height:1.1}
-.logo-title .mood-word{color:var(--mood);transition:color .5s;text-shadow:0 0 20px var(--mood-g)}
-.logo-sub{font-size:9px;letter-spacing:.22em;color:var(--text-mid);text-transform:uppercase;font-family:var(--f-ui)}
-#signal-counter{display:flex;flex-direction:column;align-items:center;line-height:1}
-#signal-count{font-family:var(--f-bebas);font-size:26px;color:var(--mood);transition:color .5s;letter-spacing:.08em}
-.sig-label{font-size:9px;letter-spacing:.18em;color:var(--text-mid);text-transform:uppercase;font-family:var(--f-ui)}
-#live-badge{display:flex;align-items:center;gap:6px;font-family:var(--f-display);font-size:10px;letter-spacing:.2em;color:#4dff91}
-.live-dot{width:7px;height:7px;border-radius:50%;background:#4dff91;animation:pulseDot 2s ease infinite}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(77,255,145,.8)}70%{box-shadow:0 0 0 7px rgba(77,255,145,0)}100%{box-shadow:0 0 0 0 rgba(77,255,145,0)}}
-#btn-audio{display:flex;align-items:center;gap:7px;padding:6px 16px;background:transparent;border:1px solid var(--g-border);border-radius:40px;color:var(--text-mid);font-size:12px;letter-spacing:.1em;transition:border-color .3s,color .3s,background .3s}
-#btn-audio:hover,#btn-audio.active{border-color:var(--mood);color:var(--mood);background:rgba(74,240,200,.06)}
-#audio-icon-glyph{font-size:14px}
-#btn-view-toggle{display:flex;align-items:center;gap:7px;padding:6px 16px;background:transparent;border:1px solid var(--g-border);border-radius:40px;color:var(--text-mid);font-size:11px;letter-spacing:.1em;transition:all .3s;font-family:var(--f-ui)}
-#btn-view-toggle:hover,#btn-view-toggle.active{border-color:var(--mood);color:var(--mood);background:rgba(74,240,200,.06)}
-
-/* ══ GLOBE LABEL ══════════════════════════════════════════ */
-#globe-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;user-select:none;z-index:6}
-#globe-emoji{display:block;font-size:clamp(36px,6vw,64px);line-height:1;margin-bottom:6px;filter:drop-shadow(0 0 16px var(--mood));transition:filter .5s}
-#globe-mood-text{display:block;font-family:var(--f-bebas);font-size:clamp(14px,2vw,22px);letter-spacing:.4em;color:var(--mood);text-shadow:0 0 20px var(--mood),0 0 50px var(--mood);transition:color .5s,text-shadow .5s}
-
-/* ══ WORLD SCORE CHIP ══════════════════════════════════════ */
-#world-score{position:absolute;top:80px;left:24px;padding:10px 18px;z-index:10;text-align:center}
-.ws-label{font-family:var(--f-display);font-size:8px;letter-spacing:.2em;color:var(--text-mid);text-transform:uppercase;margin-bottom:4px}
-#ws-dominant{font-family:var(--f-bebas);font-size:18px;color:var(--mood);transition:color .5s;letter-spacing:.12em;text-transform:uppercase}
-
-/* ══ BREADCRUMB ══════════════════════════════════════════ */
-#breadcrumb{position:absolute;top:130px;left:24px;z-index:10;display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:2px;color:var(--text-mid);font-family:var(--f-ui)}
-.crumb{cursor:pointer;transition:color .3s}
-.crumb:hover{color:var(--mood)}
-.crumb-sep{opacity:.3}
-
-/* ══ TICKER PANEL ══════════════════════════════════════════ */
-#ticker-panel{position:absolute;top:72px;right:16px;width:var(--panel-w);max-height:360px;padding:16px 14px 12px;z-index:10;overflow:hidden}
-#ticker-list{display:flex;flex-direction:column;gap:7px;overflow:hidden;max-height:296px}
-.ticker-item{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;background:rgba(255,255,255,.025);border-left:2px solid var(--tc,var(--accent));border-radius:6px;opacity:0;transform:translateX(24px);animation:tickSlide .45s cubic-bezier(.23,1,.32,1) forwards}
-@keyframes tickSlide{to{opacity:1;transform:translateX(0)}}
-.ticker-emoji{font-size:16px;line-height:1.4;flex-shrink:0}
-.ticker-body{display:flex;flex-direction:column;gap:2px;min-width:0}
-.ticker-word{font-size:14px;font-weight:600;color:var(--text-hi);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ticker-meta{font-size:10px;color:var(--text-mid);letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* ══ DIST PANEL ══════════════════════════════════════════ */
-#dist-panel{position:absolute;bottom:24px;right:16px;width:var(--panel-w);padding:16px 16px 14px;z-index:10}
-#dist-bars{display:flex;flex-direction:column;gap:8px}
-.dist-row{display:grid;grid-template-columns:54px 1fr 30px;align-items:center;gap:8px}
-.dist-label{font-size:10px;color:var(--text-mid);letter-spacing:.08em;text-transform:capitalize;font-family:var(--f-ui)}
-.dist-track{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
-.dist-fill{height:100%;border-radius:2px;background:var(--bc,var(--accent));width:0%;transition:width 1.4s cubic-bezier(.23,1,.32,1);box-shadow:0 0 6px var(--bc,var(--accent))}
-.dist-pct{font-size:10px;color:var(--text-mid);text-align:right;font-family:var(--f-ui)}
-
-/* ══ GIANT MOOD DISPLAY (bottom-left) ══════════════════════ */
-#mood-display{position:absolute;bottom:90px;left:24px;z-index:10;pointer-events:none}
-#dominant-mood-word{font-family:var(--f-bebas);font-size:clamp(54px,7vw,100px);line-height:.9;color:var(--mood);text-shadow:0 0 50px var(--mood-g),0 0 100px var(--mood-g);transition:all 1.5s ease;letter-spacing:2px}
-#poetic-sentence{font-family:var(--f-poetic);font-style:italic;font-size:13px;color:rgba(255,255,255,.45);max-width:280px;margin-top:8px;line-height:1.7;transition:color 1.5s}
-
-/* ══ INPUT PANEL ══════════════════════════════════════════ */
-#input-panel{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);width:min(500px,calc(100vw - 520px));min-width:320px;padding:20px 22px 16px;z-index:10;transition:box-shadow .4s ease}
-#input-panel:focus-within{box-shadow:0 0 0 1px var(--mood),0 12px 48px rgba(0,0,0,.55)}
-#suggestions{display:flex;flex-wrap:wrap;gap:6px;min-height:0;margin-bottom:0;overflow:hidden;transition:max-height .3s ease,margin-bottom .3s ease;max-height:0}
-#suggestions.has-items{max-height:80px;margin-bottom:10px}
-.sug-pill{padding:4px 12px;background:rgba(255,255,255,.04);border:1px solid var(--g-border);border-radius:20px;font-size:12px;color:var(--text-mid);cursor:pointer;transition:border-color .2s,color .2s,background .2s;animation:pillIn .25s ease forwards}
-.sug-pill:hover{border-color:var(--mood);color:var(--mood);background:rgba(74,240,200,.06)}
-@keyframes pillIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
-.input-row{display:flex;gap:10px;margin-bottom:10px}
-.input-wrap{flex:1;position:relative}
-#mood-input{width:100%;padding:12px 16px;background:rgba(255,255,255,.04);border:1px solid var(--g-border);border-radius:10px;color:var(--text-hi);font-family:var(--f-bebas);font-size:20px;letter-spacing:.1em;outline:none;transition:border-color .4s}
-#mood-input:focus{border-color:var(--mood)}
-#mood-input::placeholder{color:var(--text-lo);font-size:16px}
-#mood-chip{position:absolute;top:50%;right:12px;transform:translateY(-50%);font-size:18px;pointer-events:none;transition:opacity .3s;opacity:0}
-#mood-chip.visible{opacity:1}
-#btn-send{display:flex;align-items:center;gap:8px;padding:12px 22px;background:var(--mood);border:none;border-radius:10px;color:#030610;font-family:var(--f-bebas);font-size:16px;font-weight:600;letter-spacing:.16em;white-space:nowrap;transition:background .4s ease,box-shadow .4s ease,transform .15s;box-shadow:0 0 28px var(--mood-g)}
-#btn-send:hover{transform:scale(1.04)}
-#btn-send:active{transform:scale(.96)}
-.panel-title.center-text{font-family:var(--f-ui);font-size:9px;margin-bottom:10px}
-#location-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
-.loc-wrap{flex:1;display:flex;align-items:center;gap:6px;padding:7px 12px;background:rgba(255,255,255,.03);border:1px solid var(--g-border);border-radius:8px;transition:border-color .3s}
-.loc-wrap:focus-within{border-color:var(--mood)}
-.loc-icon{font-size:13px}
-.loc-wrap input{flex:1;background:transparent;border:none;color:var(--text-mid);font-size:12px;letter-spacing:.08em;outline:none;font-family:var(--f-ui)}
-.loc-wrap input::placeholder{color:var(--text-lo)}
-#btn-locate{width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border:1px solid var(--g-border);border-radius:8px;color:var(--text-mid);transition:border-color .3s,color .3s;flex-shrink:0}
-#btn-locate:hover{border-color:var(--mood);color:var(--mood)}
-#btn-locate.loading{animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#input-hint{font-size:11px;color:var(--text-lo);letter-spacing:.08em;text-align:center;font-family:var(--f-ui)}
-#hint-count{color:var(--mood);transition:color .5s}
-
-/* ══ SHARE BADGE ══════════════════════════════════════════ */
-#share-badge{position:fixed;bottom:140px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:10px 18px;z-index:30;white-space:nowrap}
-#share-url-text{font-size:12px;color:var(--text-mid);letter-spacing:.06em}
-#share-copy-btn{padding:4px 14px;background:var(--mood);border:none;border-radius:20px;color:#030610;font-size:11px;font-family:var(--f-display);letter-spacing:.1em;transition:opacity .2s}
-#share-copy-btn:hover{opacity:.85}
-
-/* ══ AURA CARD ══════════════════════════════════════════ */
-#aura-card{position:fixed;top:-9999px;left:-9999px;width:440px;height:248px;border-radius:20px;overflow:hidden;font-family:var(--f-body)}
-#aura-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,var(--mood) 0%,#050b1e 65%);transition:background .5s}
-.aura-grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");opacity:.18}
-.aura-content{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:4px;text-align:center}
-.aura-eyebrow{font-family:var(--f-display);font-size:8.5px;letter-spacing:.3em;color:rgba(255,255,255,.4);margin-bottom:4px}
-.aura-word{font-family:var(--f-bebas);font-size:54px;color:#fff;line-height:1;text-shadow:0 0 40px var(--mood);letter-spacing:.04em}
-.aura-type{font-size:13px;letter-spacing:.2em;color:var(--mood);text-transform:uppercase;margin-top:4px}
-.aura-loc{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em}
-.aura-line{width:40px;height:1px;background:rgba(255,255,255,.2);margin:8px auto}
-.aura-foot{font-size:9px;color:rgba(255,255,255,.22);letter-spacing:.1em}
-
-/* ══ RESULT OVERLAY (Claude API) ══════════════════════════ */
-#result-overlay{position:fixed;inset:0;z-index:300;background:rgba(3,5,14,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .6s}
-#result-overlay.visible{opacity:1;pointer-events:all}
-#overlay-mood-word{font-family:var(--f-bebas);font-size:clamp(70px,12vw,140px);color:var(--mood);text-shadow:0 0 80px var(--mood-g),0 0 200px var(--mood-g);letter-spacing:4px;line-height:.9;transition:all 1.5s}
-#overlay-reflection{font-family:var(--f-poetic);font-style:italic;font-size:clamp(15px,2.2vw,20px);color:rgba(255,255,255,.7);max-width:580px;text-align:center;margin-top:28px;line-height:1.9}
-#overlay-close{position:absolute;top:30px;right:30px;font-size:9px;letter-spacing:3px;color:var(--text-mid);cursor:pointer;transition:color .3s;font-family:var(--f-ui)}
-#overlay-close:hover{color:var(--mood)}
-#overlay-loading{font-family:var(--f-ui);font-size:11px;letter-spacing:4px;color:var(--text-mid);margin-top:20px;animation:pulse 1.5s ease infinite}
-#overlay-aura-prompt{font-family:var(--f-ui);font-size:10px;letter-spacing:2px;color:var(--text-lo);margin-top:20px;cursor:pointer;transition:color .3s}
-#overlay-aura-prompt:hover{color:var(--mood)}
-@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
-
-/* ══ MAP VIEW (SVG layer) ══════════════════════════════════ */
-#map-container-inner{position:absolute;inset:0;overflow:hidden}
-@keyframes cityPulse{0%{r:4;opacity:.9}50%{r:7;opacity:.4}100%{r:4;opacity:.9}}
-.city-pulse{animation:cityPulse 2.5s ease-in-out infinite}
-.city-label{display:none;pointer-events:none}
-#ripple-canvas{position:absolute;inset:0;pointer-events:none;z-index:8}
-
-/* ══ ZOOM CONTROLS ════════════════════════════════════════ */
-#zoom-controls{position:absolute;bottom:100px;right:16px;z-index:20;display:flex;flex-direction:column;gap:4px}
-.zoom-btn{width:32px;height:32px;background:var(--g-bg);border:1px solid var(--g-border);color:var(--text-mid);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;border-radius:8px;font-family:var(--f-ui);backdrop-filter:blur(12px)}
-.zoom-btn:hover{border-color:var(--mood);color:var(--mood);box-shadow:0 0 10px var(--mood-g)}
-
-/* ══ TOOLTIP ══════════════════════════════════════════════ */
-#tooltip{position:fixed;z-index:200;pointer-events:none;background:rgba(3,5,14,.97);border:1px solid var(--g-border);border-radius:12px;padding:14px;min-width:200px;max-width:260px;opacity:0;transition:opacity .2s;box-shadow:0 4px 30px rgba(0,0,0,.8);backdrop-filter:blur(16px)}
-#tooltip.visible{opacity:1}
-.tt-place{font-family:var(--f-bebas);font-size:22px;letter-spacing:2px;color:var(--mood)}
-.tt-mood{font-size:9px;letter-spacing:3px;color:var(--text-mid);text-transform:uppercase;margin-top:2px;font-family:var(--f-ui)}
-.tt-sentence{font-family:var(--f-poetic);font-style:italic;font-size:12px;color:rgba(255,255,255,.5);margin-top:8px;line-height:1.6}
-.tt-keywords{font-size:10px;color:var(--text-lo);margin-top:8px;font-family:var(--f-ui)}
-
-/* ══ TOAST ══════════════════════════════════════════════ */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(7,12,32,.95);border:1px solid var(--g-border);backdrop-filter:blur(14px);color:var(--text-hi);font-size:13px;letter-spacing:.07em;padding:10px 24px;border-radius:40px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:200;white-space:nowrap}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* ══ AMBIENT BLOBS ══════════════════════════════════════ */
-body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px);opacity:.07;animation:drift 16s ease-in-out infinite alternate}
-body::before{width:600px;height:600px;background:var(--accent2);top:-140px;left:-100px}
-body::after{width:500px;height:500px;background:var(--accent);bottom:-100px;right:-80px;animation-delay:-8s}
-@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(50px,40px) scale(1.12)}}
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--g-border);border-radius:2px}
-
-/* ══ RESPONSIVE ══════════════════════════════════════════ */
-@media(max-width:900px){#ticker-panel,#dist-panel,#mood-display{display:none}#input-panel{width:min(460px,92vw);bottom:20px}#world-score{top:70px;left:12px}.header-center{display:none}}
-</style>
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-<!-- LOADER -->
+<!-- ══════════════════════════════════════════════════════
+     LOADER
+     ══════════════════════════════════════════════════════ -->
 <div id="loader">
-  <div class="loader-inner">
-    <div class="loader-orb"></div>
-    <div class="loader-ring r1"></div>
-    <div class="loader-ring r2"></div>
-    <div class="loader-ring r3"></div>
-    <div class="loader-texts">
-      <p class="loader-title">GLOBAL MOOD RING</p>
-      <p class="loader-sub">Tuning into the collective consciousness…</p>
+  <div class="loader-logo">GLOBAL MOOD RING</div>
+  <div class="loader-sub">Tuning into Earth's frequency</div>
+  <div class="loader-bar">
+    <div id="loader-bar-fill"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     APP SHELL
+     ══════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- ── TOP NAV ── -->
+  <nav id="top-nav">
+    <div id="logo">◎ GMR</div>
+
+    <button id="btn-globe" class="nav-btn active" title="Globe view">
+      <span>Globe</span>
+    </button>
+    <button id="btn-map" class="nav-btn" title="Map view">
+      <span>Map</span>
+    </button>
+    <button id="btn-audio" class="nav-btn" onclick="toggleAudio()" title="Toggle audio">
+      <span id="audio-icon-glyph">◎</span> Audio
+    </button>
+
+    <div id="nav-spacer"></div>
+
+    <!-- Stats bar -->
+    <div id="stats-bar">
+      <div class="stat-item">
+        <span class="stat-label">SIGNALS</span>
+        <span id="stat-total" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">DOMINANT</span>
+        <span id="stat-dominant" class="stat-value">—</span>
+      </div>
+      <div id="weather-chip">
+        <span class="weather-icon">🌤</span>
+        <span class="weather-label">CLEAR</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── LEFT PANEL ── -->
+  <aside id="left-panel">
+
+    <!-- Journalist -->
+    <div class="glass-panel" id="journalist-panel">
+      <div class="panel-title">
+        <span class="panel-title-dot"></span>
+        LIVE CORRESPONDENT
+      </div>
+      <div id="journalist-text">Initializing signal…</div>
+      <div id="journalist-ts">STANDBY</div>
+    </div>
+
+    <!-- Mood Distribution -->
+    <div class="glass-panel">
+      <div class="panel-title">EARTH'S FREQUENCY</div>
+      <div id="distribution-bars"></div>
+    </div>
+
+    <!-- Forecast -->
+    <div class="glass-panel">
+      <div class="panel-title">EMOTIONAL FORECAST</div>
+      <div id="forecast-content">
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;color:rgba(255,255,255,0.3);line-height:1.6">
+          Tomorrow's mood hasn't been written yet.
+        </div>
+      </div>
+      <button id="forecast-btn">Calculate forecast →</button>
+    </div>
+
+  </aside>
+
+  <!-- ── VIEW AREA ── -->
+  <main id="view-area">
+
+    <!-- Globe -->
+    <div id="globe-wrap" class="active">
+      <canvas id="globe-canvas"></canvas>
+    </div>
+
+    <!-- Map -->
+    <div id="map-wrap" class="hidden">
+      <div id="map-container-inner">
+        <svg id="map-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <canvas id="ripple-canvas"></canvas>
+      </div>
+
+      <!-- Map Controls -->
+      <div id="map-controls">
+        <button class="map-ctrl-btn" onclick="zoomIn()" title="Zoom in">+</button>
+        <button class="map-ctrl-btn" onclick="zoomOut()" title="Zoom out">−</button>
+        <button class="map-ctrl-btn" onclick="resetMapView()" title="Reset view">⊙</button>
+      </div>
+
+      <!-- Breadcrumb -->
+      <div id="breadcrumb"></div>
+    </div>
+
+    <!-- Giant Mood Display (center overlay) -->
+    <div id="giant-mood-display">
+      <span id="giant-mood">◉</span>
+      <span id="giant-type">
+        <span id="mood-glow-dot"></span>SERENITY
+      </span>
+      <span id="giant-sentence">Waiting for the first signal…</span>
+    </div>
+
+  </main>
+
+  <!-- ── RIGHT PANEL ── -->
+  <aside id="right-panel">
+
+    <!-- Signal Feed / Ticker -->
+    <div class="glass-panel">
+      <div class="panel-title">SIGNAL FEED</div>
+      <ul id="ticker-list"></ul>
+    </div>
+
+    <!-- Streak Widget -->
+    <div class="glass-panel">
+      <div id="streak-widget"></div>
+      <button
+        data-action="wrapped"
+        style="margin-top:10px;width:100%;padding:7px;border:1px solid rgba(74,240,200,0.18);border-radius:8px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;transition:all .25s ease"
+        onmouseover="this.style.background='rgba(74,240,200,0.07)'"
+        onmouseout="this.style.background='none'"
+      >
+        Mood Wrapped →
+      </button>
+    </div>
+
+    <!-- 24h Waveform -->
+    <div class="glass-panel">
+      <div class="panel-title">24H SIGNAL WAVE</div>
+      <canvas id="waveform-canvas"></canvas>
+    </div>
+
+    <!-- Print / Aura -->
+    <div class="glass-panel">
+      <div class="panel-title">YOUR AURA</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button
+          onclick="captureAuraCardAndDownload()"
+          style="width:100%;padding:7px;border:1px solid rgba(74,240,200,0.18);border-radius:8px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;transition:all .25s ease"
+          onmouseover="this.style.background='rgba(74,240,200,0.07)'"
+          onmouseout="this.style.background='none'"
+        >
+          🎴 Download Aura Card
+        </button>
+        <button
+          onclick="showPrintShop()"
+          style="width:100%;padding:7px;border:1px solid rgba(255,255,255,0.07);border-radius:8px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;color:rgba(255,255,255,0.35);text-transform:uppercase;transition:all .25s ease"
+          onmouseover="this.style.background='rgba(255,255,255,0.04)'"
+          onmouseout="this.style.background='none'"
+        >
+          🖼 Print Shop
+        </button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── INPUT AREA ── -->
+  <footer id="input-area">
+    <form id="input-bar" autocomplete="off">
+      <div id="input-wrap">
+        <input
+          id="mood-input"
+          type="text"
+          placeholder="how do you feel right now…"
+          maxlength="40"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <span id="signal-hint"></span>
+      </div>
+      <button id="submit-btn" type="submit">SEND</button>
+    </form>
+
+    <!-- Share badge -->
+    <div id="share-badge" class="hidden" onclick="copyShareUrl()">
+      <span style="color:var(--accent);font-size:11px">🔗</span>
+      <span id="share-url-text"></span>
+    </div>
+  </footer>
+
+</div><!-- /#app -->
+
+<!-- ══════════════════════════════════════════════════════
+     SUBMIT OVERLAY
+     ══════════════════════════════════════════════════════ -->
+<div id="submit-overlay" onclick="if(event.target===this)hideSubmitOverlay()">
+  <div id="so-inner">
+    <div id="so-bg"></div>
+    <span id="so-emoji">◉</span>
+    <span id="so-word"></span>
+    <p id="so-reflection"></p>
+    <span id="so-city"></span>
+    <button id="so-twin-btn">Find my Mood Twin →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MOOD TWIN PANEL
+     ══════════════════════════════════════════════════════ -->
+<div id="twin-panel">
+  <button class="twin-close" onclick="closeTwinPanel()">✕</button>
+  <div style="margin-bottom:10px">
+    <span id="twin-mood-dot"></span>
+    <span id="twin-city-name"></span>
+  </div>
+  <span id="twin-city-country"></span>
+  <span id="twin-city-sent"></span>
+  <span id="twin-story">Composing your story…</span>
+  <button id="twin-share-btn">Share this connection →</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ARCHETYPE PANEL
+     ══════════════════════════════════════════════════════ -->
+<div id="archetype-panel">
+  <span id="arch-symbol">✦</span>
+  <span id="arch-name">THE WITNESS</span>
+  <p id="arch-desc"></p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MOOD WRAPPED OVERLAY
+     ══════════════════════════════════════════════════════ -->
+<div id="wrapped-overlay" onclick="if(event.target===this)closeWrapped()">
+  <div id="wrapped-box">
+    <button class="wrapped-close" onclick="closeWrapped()">✕</button>
+
+    <div id="wrapped-loading">Composing your emotional year…</div>
+
+    <div id="wrapped-content" style="display:none">
+      <span id="wrapped-identity">THE WITNESS</span>
+      <span id="wrapped-headline"></span>
+      <span id="wrapped-narrative"></span>
+
+      <div class="wrapped-stats">
+        <div class="wrapped-stat">
+          <span id="wrapped-top-mood" class="wrapped-stat-val">—</span>
+          <span class="wrapped-stat-label">Top Mood</span>
+        </div>
+        <div class="wrapped-stat">
+          <span id="wrapped-streak" class="wrapped-stat-val">0</span>
+          <span class="wrapped-stat-label">Streak</span>
+        </div>
+        <div class="wrapped-stat">
+          <span id="wrapped-total" class="wrapped-stat-val">0</span>
+          <span class="wrapped-stat-label">Signals</span>
+        </div>
+      </div>
+
+      <div id="wrapped-dist"></div>
+      <span id="wrapped-affirmation"></span>
     </div>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app" class="hidden">
+<!-- ══════════════════════════════════════════════════════
+     PRO GATE OVERLAY
+     ══════════════════════════════════════════════════════ -->
+<div id="pro-overlay" onclick="if(event.target===this)closeProGate()">
+  <div id="pro-box">
+    <button class="pro-close-btn" onclick="closeProGate()">✕</button>
+    <div class="pro-title">GMR PRO</div>
+    <div class="pro-subtitle">Unlock the full signal</div>
+    <span id="pro-feature-name"></span>
+    <div id="pro-feature-list"></div>
+    <span class="pro-price">$4.99</span>
+    <span class="pro-price-sub">PER MONTH · CANCEL ANYTIME</span>
+    <button class="pro-upgrade-btn" onclick="upgradeToPro()">Unlock Pro</button>
+  </div>
+</div>
 
-  <div id="mood-bleed"></div>
-  <div id="aurora"></div>
-
-  <!-- Three.js Globe -->
-  <canvas id="globe-canvas"></canvas>
-  <!-- 2D particle burst -->
-  <canvas id="particle-canvas"></canvas>
-
-  <!-- SVG Map overlay (toggled) -->
-  <div id="map-overlay">
-    <div id="map-container-inner">
-      <svg id="map-svg" xmlns="http://www.w3.org/2000/svg"></svg>
-      <canvas id="ripple-canvas"></canvas>
+<!-- ══════════════════════════════════════════════════════
+     PRINT SHOP OVERLAY
+     ══════════════════════════════════════════════════════ -->
+<div id="print-overlay" onclick="if(event.target===this)closePrintShop()">
+  <div class="print-overlay-inner">
+    <div class="print-overlay-title">
+      <span>PRINT SHOP</span>
+      <button onclick="closePrintShop()" style="font-size:18px;color:rgba(255,255,255,0.3);cursor:pointer">✕</button>
     </div>
+    <div id="print-grid"></div>
   </div>
+</div>
 
-  <!-- HEADER -->
-  <header id="header">
-    <div class="header-left">
-      <div class="logo-mark">
-        <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-          <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.2" opacity=".35"/>
-          <circle cx="16" cy="16" r="8.5" stroke="currentColor" stroke-width="1.5" opacity=".65"/>
-          <circle cx="16" cy="16" r="3.5" fill="currentColor"/>
-          <line x1="2" y1="16" x2="30" y2="16" stroke="currentColor" stroke-width=".7" opacity=".25"/>
-          <line x1="16" y1="2" x2="16" y2="30" stroke="currentColor" stroke-width=".7" opacity=".25"/>
-        </svg>
-      </div>
-      <div class="logo-text">
-        <h1 class="logo-title">GLOBAL <span class="mood-word" id="logo-mood-word">MOOD</span> RING</h1>
-        <p class="logo-sub">Collective Emotional Cartography</p>
-      </div>
-    </div>
-    <div class="header-center">
-      <div id="signal-counter">
-        <span id="signal-count">—</span>
-        <span class="sig-label">signals sent</span>
-      </div>
-    </div>
-    <div class="header-right">
-      <div id="live-badge"><span class="live-dot"></span>LIVE</div>
-      <button id="btn-view-toggle" onclick="toggleView()">🌍 GLOBE</button>
-      <button id="btn-audio" onclick="window.toggleAudio()">
-        <span id="audio-icon-glyph">◎</span>
-        <span>Soundscape</span>
-      </button>
-    </div>
-  </header>
+<!-- ══════════════════════════════════════════════════════
+     TOOLTIP
+     ══════════════════════════════════════════════════════ -->
+<div id="tooltip">
+  <span id="tt-place"></span>
+  <span id="tt-mood"></span>
+  <span id="tt-sentence"></span>
+  <span id="tt-keywords"></span>
+</div>
 
-  <!-- Globe label (globe mode) -->
-  <div id="globe-label">
-    <span id="globe-emoji">◌</span>
-    <span id="globe-mood-text">NEUTRAL</span>
+<!-- ══════════════════════════════════════════════════════
+     AURA CARD (offscreen, for html2canvas)
+     ══════════════════════════════════════════════════════ -->
+<div id="aura-card">
+  <div id="aura-bg"></div>
+  <div id="aura-content">
+    <span id="aura-word">CALM</span>
+    <span id="aura-type">SERENITY</span>
+    <span id="aura-loc">Earth</span>
+    <span id="aura-date"></span>
   </div>
+</div>
 
-  <!-- World score chip -->
-  <div id="world-score" class="glass-chip">
-    <p class="ws-label">DOMINANT MOOD</p>
-    <p id="ws-dominant">—</p>
-  </div>
+<!-- ══════════════════════════════════════════════════════
+     EVENT BANNER
+     ══════════════════════════════════════════════════════ -->
+<div id="event-banner"></div>
 
-  <!-- Breadcrumb (map mode) -->
-  <div id="breadcrumb" style="display:none">
-    <span class="crumb" onclick="resetMapView()">WORLD</span>
-  </div>
+<!-- ══════════════════════════════════════════════════════
+     TOAST
+     ══════════════════════════════════════════════════════ -->
+<div id="toast"></div>
 
-  <!-- Ticker -->
-  <aside id="ticker-panel" class="glass-panel">
-    <div class="panel-hd">
-      <span class="panel-title">⚡ LIVE SIGNALS</span>
-      <span id="ticker-badge" class="count-badge">0</span>
-    </div>
-    <ul id="ticker-list"></ul>
-  </aside>
+<!-- ══════════════════════════════════════════════════════
+     SCRIPTS
+     Load order matters — config first, then engines,
+     then UI glue, then main boot last.
+     ══════════════════════════════════════════════════════ -->
 
-  <!-- Distribution -->
-  <div id="dist-panel" class="glass-panel">
-    <div class="panel-hd"><span class="panel-title">MOOD DISTRIBUTION</span></div>
-    <div id="dist-bars"></div>
-  </div>
-
-  <!-- Giant mood display -->
-  <div id="mood-display">
-    <div id="dominant-mood-word">CALM</div>
-    <div id="poetic-sentence">The world holds its breath between heartbeats.</div>
-  </div>
-
-  <!-- Zoom controls (map mode) -->
-  <div id="zoom-controls" style="display:none">
-    <button class="zoom-btn" onclick="zoomIn()">+</button>
-    <button class="zoom-btn" onclick="resetMapView()">⊙</button>
-    <button class="zoom-btn" onclick="zoomOut()">−</button>
-  </div>
-
-  <!-- Input panel -->
-  <div id="input-panel" class="glass-panel">
-    <p class="panel-title center-text">BROADCAST YOUR MOOD TO THE WORLD</p>
-    <div id="suggestions"></div>
-    <div class="input-row">
-      <div class="input-wrap">
-        <input id="mood-input" type="text" maxlength="32" placeholder="TYPE A MOOD WORD…"
-          oninput="window.onMoodInput(this.value)" autocomplete="off" spellcheck="false"/>
-        <span id="mood-chip"></span>
-      </div>
-      <button id="btn-send" onclick="window.submitMood()">
-        SEND
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
-    <div id="location-row">
-      <div class="loc-wrap"><span class="loc-icon">📍</span><input id="city-input" type="text" placeholder="City"/></div>
-      <div class="loc-wrap"><span class="loc-icon">🌍</span><input id="country-input" type="text" placeholder="Country"/></div>
-      <button id="btn-locate" onclick="window.detectLocation()" title="Auto-detect">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-      </button>
-    </div>
-    <p id="input-hint">Your signal joins <span id="hint-count">thousands of</span> voices shaping the planet's mood</p>
-  </div>
-
-  <!-- Share badge -->
-  <div id="share-badge" class="glass-chip hidden">
-    <span id="share-url-text"></span>
-    <button id="share-copy-btn" onclick="window.copyShareUrl()">Copy link</button>
-  </div>
-
-  <!-- Aura card (offscreen) -->
-  <div id="aura-card">
-    <div id="aura-bg"></div>
-    <div class="aura-grain"></div>
-    <div class="aura-content">
-      <p class="aura-eyebrow">MY GLOBAL MOOD SIGNAL</p>
-      <p class="aura-word" id="aura-word">—</p>
-      <p class="aura-type" id="aura-type">—</p>
-      <p class="aura-loc"  id="aura-loc">—</p>
-      <div class="aura-line"></div>
-      <p class="aura-foot">globalmoodnring.app · <span id="aura-date"></span></p>
-    </div>
-  </div>
-
-  <!-- Tooltip -->
-  <div id="tooltip">
-    <div class="tt-place" id="tt-place"></div>
-    <div class="tt-mood" id="tt-mood"></div>
-    <div class="tt-sentence" id="tt-sentence"></div>
-    <div class="tt-keywords" id="tt-keywords"></div>
-  </div>
-
-  <!-- Claude AI result overlay -->
-  <div id="result-overlay">
-    <span id="overlay-close" onclick="closeOverlay()">× CLOSE</span>
-    <div id="overlay-mood-word"></div>
-    <div id="overlay-reflection"></div>
-    <div id="overlay-loading"></div>
-    <div id="overlay-aura-prompt" onclick="captureAuraCardAndDownload()">✦ DOWNLOAD AURA CARD</div>
-  </div>
-
-  <div id="toast"></div>
-</div><!-- /#app -->
-
-<!-- LIBS -->
+<!-- Three.js r128 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<!-- html2canvas (for aura card download) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-<script>
-(function(){
-'use strict';
+<!-- Supabase (optional — falls back to simulation if no config) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
-/* ══════════════════════════════════════════════════════════
-   SUPABASE CONFIG
-   ══════════════════════════════════════════════════════════ */
-const SB_URL  = 'https://elffxqkhihilfmbnengx.supabase.co';
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZ4cWtoaWhpbGZtYm5lbmd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MTYxNTMsImV4cCI6MjA5Mjk5MjE1M30.xXn9k752Qk3oIGqU1GkrgryXNxVOPPU9ECX2CbDMHhE';
+<!-- GMR modules — config must be first -->
+<script src="js/config.js"></script>
+<script src="js/globe.js"></script>
+<script src="js/map.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/streaks.js"></script>
+<script src="js/viral.js"></script>
+<script src="js/monetize.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
 
-/* ══════════════════════════════════════════════════════════
-   MOOD DICTIONARY (rich — from your version)
-   ══════════════════════════════════════════════════════════ */
-const MOODS = {
-  happy:      {t:'joy',      c:'#ffd166',e:'☀️'}, joyful:{t:'joy',c:'#ffd166',e:'🌟'},
-  excited:    {t:'joy',      c:'#ff9f1c',e:'⚡'}, elated:{t:'joy',c:'#ffbf69',e:'✨'},
-  bliss:      {t:'joy',      c:'#ffd166',e:'🌈'}, cheerful:{t:'joy',c:'#ffe066',e:'😄'},
-  euphoric:   {t:'joy',      c:'#ffc300',e:'🎉'}, grateful:{t:'joy',c:'#ffaa44',e:'🙏'},
-  hopeful:    {t:'joy',      c:'#ffc966',e:'🌅'}, proud:{t:'joy',c:'#ffa500',e:'🦁'},
-  sad:        {t:'sadness',  c:'#4895ef',e:'🌊'}, lonely:{t:'sadness',c:'#3a86ff',e:'🌙'},
-  melancholy: {t:'sadness',  c:'#4361ee',e:'💙'}, grief:{t:'sadness',c:'#2d3a8c',e:'🫧'},
-  nostalgic:  {t:'sadness',  c:'#5577dd',e:'🕯️'}, heartbroken:{t:'sadness',c:'#3a6bd6',e:'💔'},
-  lost:       {t:'sadness',  c:'#3060cc',e:'🌫️'},
-  angry:      {t:'anger',    c:'#ef233c',e:'🔥'}, rage:{t:'anger',c:'#d62828',e:'💢'},
-  frustrated: {t:'anger',    c:'#f4433c',e:'😤'}, furious:{t:'anger',c:'#c1121f',e:'🌋'},
-  bitter:     {t:'anger',    c:'#e63946',e:'😠'},
-  anxious:    {t:'fear',     c:'#9b5de5',e:'🌀'}, scared:{t:'fear',c:'#7b2d8b',e:'👁️'},
-  nervous:    {t:'fear',     c:'#b57bee',e:'🌪️'}, paranoid:{t:'fear',c:'#6a0dad',e:'🕷️'},
-  overwhelmed:{t:'fear',     c:'#8338ec',e:'💫'},
-  calm:       {t:'serenity', c:'#4af0c8',e:'🌿'}, peaceful:{t:'serenity',c:'#56cfe1',e:'🍃'},
-  zen:        {t:'serenity', c:'#2ec4b6',e:'☯️'}, serene:{t:'serenity',c:'#80ffdb',e:'🌊'},
-  content:    {t:'serenity', c:'#48cae4',e:'😌'}, balanced:{t:'serenity',c:'#4cc9f0',e:'⚖️'},
-  love:       {t:'love',     c:'#ff6b9d',e:'💗'}, romantic:{t:'love',c:'#ff4d8d',e:'🌹'},
-  tender:     {t:'love',     c:'#ff85a1',e:'🫶'}, adoration:{t:'love',c:'#ff5c8a',e:'💖'},
-  surprised:  {t:'surprise', c:'#f77f00',e:'🎆'}, amazed:{t:'surprise',c:'#fcbf49',e:'🌠'},
-  shocked:    {t:'surprise', c:'#f4a261',e:'😲'}, awestruck:{t:'surprise',c:'#e9c46a',e:'🤩'},
-  bored:      {t:'neutral',  c:'#7a8fb5',e:'😐'}, confused:{t:'neutral',c:'#a8b2cc',e:'🤔'},
-  tired:      {t:'neutral',  c:'#6c7a9c',e:'😴'}, neutral:{t:'neutral',c:'#4af0c8',e:'◌'},
-  // Extra from map version
-  hope:       {t:'joy',      c:'#7ec8e3',e:'🌅'}, numb:{t:'neutral',c:'#8e8c99',e:'😶'},
-};
-
-const TYPE_COLOR = {
-  joy:'#ffd166', sadness:'#4895ef', anger:'#ef233c', fear:'#9b5de5',
-  serenity:'#4af0c8', love:'#ff6b9d', surprise:'#f77f00', neutral:'#7a8fb5'
-};
-
-const AUDIO_FREQS = {
-  joy:      [261.63,329.63,392.00,523.25],
-  sadness:  [55.00, 110.00,146.83,174.61],
-  anger:    [65.41, 130.81,155.56,207.65],
-  fear:     [73.42, 110.00,164.81,196.00],
-  serenity: [174.61,220.00,261.63,349.23],
-  love:     [196.00,246.94,293.66,392.00],
-  surprise: [293.66,369.99,440.00,587.33],
-  neutral:  [55.00, 110.00,146.83,220.00],
-};
-
-/* ══════════════════════════════════════════════════════════
-   ITALY DETAIL DATA
-   ══════════════════════════════════════════════════════════ */
-const ITALY_CITIES = [
-  {name:'Rome',    lat:41.90,lon:12.50,mood:'serenity',moodKey:'serene',  sentence:'The eternal stones remember what the living dare to dream.',            keywords:'speranza, rinnovamento, politica, storia, passeggiata'},
-  {name:'Milan',   lat:45.47,lon:9.19, mood:'joy',     moodKey:'excited', sentence:'Steel towers catch the morning light like a city mid-breath.',           keywords:'moda, finanza, innovazione, design, aperitivo'},
-  {name:'Naples',  lat:40.85,lon:14.27,mood:'love',    moodKey:'love',    sentence:'Love here is louder than the sea, older than the volcano.',              keywords:'amore, famiglia, pizza, vesuvio, musica'},
-  {name:'Florence',lat:43.77,lon:11.25,mood:'joy',     moodKey:'grateful',sentence:'Beauty made stone teaches the heart a slower kind of joy.',              keywords:'arte, ringraziamento, bellezza, cultura, vino'},
-  {name:'Venice',  lat:45.44,lon:12.32,mood:'serenity',moodKey:'calm',    sentence:'The water forgives the city everything, quietly, twice a day.',          keywords:'silenzio, acqua, laguna, carnevale, pace'},
-  {name:'Turin',   lat:45.07,lon:7.69, mood:'neutral', moodKey:'numb',    sentence:'Industry sleeps beneath the grey light, breathing old routines.',        keywords:'lavoro, industria, Fiat, montagna, riflessione'},
-  {name:'Bologna', lat:44.49,lon:11.34,mood:'joy',     moodKey:'joyful',  sentence:'Red towers cast long shadows on the laughter of open streets.',          keywords:'gioia, cibo, università, portici, vivacità'},
-  {name:'Palermo', lat:38.12,lon:13.36,mood:'fear',    moodKey:'anxious', sentence:'Between the feast and the fear, the city learns its own rhythm.',        keywords:'calore, cambiamento, tradizione, incertezza, mercato'},
-  {name:'Catania', lat:37.50,lon:15.09,mood:'anger',   moodKey:'angry',   sentence:'The mountain remembers fire; the city remembers how to burn.',           keywords:'etna, protesta, passione, cambiamento, forza'},
-  {name:'Marsala', lat:37.80,lon:12.43,mood:'sadness', moodKey:'sad',     sentence:'Salt and sunset dissolve the hours into something almost beautiful.',    keywords:'vino, mare, tramonto, memoria, solitudine'},
-];
-
-/* ══════════════════════════════════════════════════════════
-   WORLD CITIES
-   ══════════════════════════════════════════════════════════ */
-const WORLD_CITIES = [
-  ...ITALY_CITIES.map(c=>({...c,country:'Italy'})),
-  {name:'New York',    lat:40.71,lon:-74.01,country:'USA',     mood:'joy',     moodKey:'excited',  sentence:'Eight million frequencies playing the same restless chord.',     keywords:'hustle, dreams, pizza, subway, ambition'},
-  {name:'Los Angeles', lat:34.05,lon:-118.24,country:'USA',    mood:'joy',     moodKey:'hopeful',  sentence:'The sun sets on ten thousand auditions, daily.',                 keywords:'dreams, sun, traffic, culture, optimism'},
-  {name:'London',      lat:51.51,lon:-0.13,  country:'UK',     mood:'serenity',moodKey:'calm',     sentence:'Grey drizzle, underground rumble, a nation in patient queue.',   keywords:'resilience, tea, underground, irony, rain'},
-  {name:'Paris',       lat:48.86,lon:2.35,   country:'France', mood:'love',    moodKey:'romantic', sentence:'Every boulevard an argument, every bridge a love letter.',       keywords:'amour, café, grève, lumière, métro'},
-  {name:'Berlin',      lat:52.52,lon:13.40,  country:'Germany',mood:'joy',     moodKey:'excited',  sentence:'History and techno in the same breath, every weekend.',          keywords:'Techno, Geschichte, Freiheit, Wandel'},
-  {name:'Madrid',      lat:40.42,lon:-3.70,  country:'Spain',  mood:'joy',     moodKey:'joyful',   sentence:'Midnight dinner is not late here — it is liturgy.',             keywords:'fiesta, fútbol, alegría, sol, noche'},
-  {name:'Tokyo',       lat:35.68,lon:139.69, country:'Japan',  mood:'serenity',moodKey:'zen',      sentence:'Ten million people moving in synchronized silence.',             keywords:'静寂, 電車, 礼儀, 桜, 秩序'},
-  {name:'Beijing',     lat:39.91,lon:116.39, country:'China',  mood:'joy',     moodKey:'excited',  sentence:'A capital building its next century on top of the last.',        keywords:'创新, 历史, 发展, 文化, 进步'},
-  {name:'Mumbai',      lat:19.08,lon:72.88,  country:'India',  mood:'joy',     moodKey:'excited',  sentence:'Heat, chai, and ambition steaming from every window.',           keywords:'Bollywood, दपट, मुंबई, सपने, रफ्तार'},
-  {name:'São Paulo',   lat:-23.55,lon:-46.63,country:'Brazil', mood:'joy',     moodKey:'excited',  sentence:'The city that never declared a speed limit on anything.',        keywords:'correria, samba, negócios, trânsito'},
-  {name:'Cairo',       lat:30.04,lon:31.24,  country:'Egypt',  mood:'fear',    moodKey:'anxious',  sentence:'Ancient river, modern current — both refuse to slow down.',      keywords:'تاريخ, نيل, قلق, حضارة, تحول'},
-  {name:'Lagos',       lat:6.52, lon:3.38,   country:'Nigeria',mood:'joy',     moodKey:'excited',  sentence:'The energy here has never considered being quiet.',               keywords:'hustle, Afrobeats, resilience, color'},
-  {name:'Istanbul',    lat:41.01,lon:28.98,  country:'Turkey', mood:'fear',    moodKey:'nervous',  sentence:'Two continents hold their breath and press together.',           keywords:'Boğaz, tarih, doğu, batı, köprü'},
-  {name:'Sydney',      lat:-33.87,lon:151.21,country:'Australia',mood:'serenity',moodKey:'serene', sentence:'The harbour teaches the art of the unhurried morning.',          keywords:'surf, mate, sun, nature, easy'},
-  {name:'Seoul',       lat:37.57,lon:126.98, country:'S.Korea',mood:'joy',     moodKey:'excited',  sentence:'Sunrise smells like coffee and firmware updates.',               keywords:'K-pop, 빠름, 기술, 희망, 야망'},
-  {name:'Mexico City', lat:19.43,lon:-99.13, country:'Mexico', mood:'love',    moodKey:'love',     sentence:'Twelve million people cooking love into the altitude.',          keywords:'familia, tacos, amor, cultura, altura'},
-  {name:'Nairobi',     lat:-1.29,lon:36.82,  country:'Kenya',  mood:'joy',     moodKey:'hopeful',  sentence:'Silicon Savannah: where innovation and acacia trees grow together.',keywords:'matumaini, teknolojia, nguvu, safari'},
-  {name:'Bangkok',     lat:13.76,lon:100.50, country:'Thailand',mood:'serenity',moodKey:'peaceful',sentence:'Traffic and temple bells are not opposites here.',               keywords:'สงบ, วัด, อาหาร, รอยยิ้ม, รถติด'},
-];
-
-/* MAP DIMENSIONS */
-const MAP_W = 1400, MAP_H = 700;
-function mX(lon){ return (lon+180)*(MAP_W/360); }
-function mY(lat){
-  const r=Math.PI/180, latR=lat*r;
-  const y=Math.log(Math.tan(Math.PI/4+latR/2));
-  return (MAP_H/2)-(MAP_W*y/(2*Math.PI));
-}
-
-/* COUNTRY SHAPES */
-const COUNTRY_SHAPES = {
-  USA: {pts:[[235,140],[310,140],[330,155],[335,175],[310,195],[295,190],[280,185],[265,185],[245,175],[230,170],[230,155]], mood:'joy',    sentence:'The engine roars in every direction at once.',           keywords:'freedom, hustle, innovation, anxiety'},
-  CAN: {pts:[[225,70],[330,70],[335,110],[325,125],[310,140],[295,130],[280,130],[250,135],[235,140],[230,120],[225,90]],  mood:'serenity',sentence:'Apologies and gratitude are the national currencies.',   keywords:'kindness, nature, winter, hockey'},
-  MEX: {pts:[[235,175],[280,185],[285,200],[270,215],[255,220],[240,210],[230,195],[235,180]], mood:'love',    sentence:'Love here is cooked into everything, slowly.',           keywords:'familia, amor, cultura, color'},
-  BRA: {pts:[[330,220],[390,205],[420,230],[415,260],[395,290],[370,295],[345,280],[330,260],[320,245],[325,225]], mood:'joy',    sentence:'Even sorrow here eventually joins the samba.',           keywords:'alegria, samba, futebol, natureza'},
-  COL: {pts:[[295,215],[320,210],[325,230],[310,240],[295,235],[285,225]], mood:'joy',    sentence:'Coffee and music have been quietly healing everything.',keywords:'alegría, café, música, magia'},
-  ARG: {pts:[[330,280],[355,280],[360,310],[345,345],[330,355],[315,340],[315,310],[320,290]], mood:'fear',    sentence:'The economy trembles; the tango does not.',              keywords:'tango, crisis, orgullo, familia'},
-  CHL: {pts:[[315,295],[330,285],[330,310],[320,350],[315,360],[310,345],[310,310]], mood:'serenity',sentence:'At the end of the world, the light is exceptional.',     keywords:'gratitud, naturaleza, cordillera'},
-  GBR: {pts:[[490,100],[503,95],[508,108],[500,120],[490,125],[483,115],[486,103]], mood:'serenity',sentence:'Grey skies teach patience; tea teaches everything else.', keywords:'resilience, tradition, irony, rain'},
-  FRA: {pts:[[488,125],[505,120],[515,130],[510,145],[495,150],[484,142],[484,130]], mood:'love',    sentence:'Paris exhales romance even through its arguments.',       keywords:'amour, grève, culture, vin, liberté'},
-  ESP: {pts:[[478,145],[510,142],[515,158],[495,165],[478,162],[472,153]], mood:'joy',    sentence:'The evening lasts forever, and no one minds.',           keywords:'alegría, siesta, fútbol, fiesta'},
-  PRT: {pts:[[472,148],[480,147],[480,162],[473,165],[468,158],[468,150]], mood:'sadness',sentence:'Fado fills the spaces where the explorers used to be.',  keywords:'saudade, mar, fado, história'},
-  DEU: {pts:[[505,112],[525,110],[530,125],[520,135],[505,135],[498,125],[500,115]], mood:'neutral', sentence:'Order is its own kind of comfort, worn smooth with use.',keywords:'Ordnung, Arbeit, Effizienz, Ruhe'},
-  ITA: {pts:[[510,135],[525,133],[530,145],[528,160],[518,170],[510,160],[507,148],[508,138]], mood:'joy', sentence:'Between ruins and renaissance, Italians choose both.',  keywords:'speranza, arte, famiglia, bellezza'},
-  POL: {pts:[[525,105],[550,102],[555,115],[540,122],[525,120],[518,112]], mood:'joy',    sentence:'History taught them to rebuild; they became experts.',   keywords:'nadzieja, pamięć, kultura, solidarność'},
-  SWE: {pts:[[510,75],[525,70],[530,85],[525,100],[515,108],[505,100],[505,80]], mood:'serenity',sentence:'Silence here is not loneliness — it is interior design.',keywords:'lugn, natur, frihet, design, lagom'},
-  NOR: {pts:[[495,65],[515,62],[520,75],[510,82],[498,78],[492,70]], mood:'joy',    sentence:'The fjords teach a vocabulary no human tongue can hold.', keywords:'takknemlighet, natur, frihet, stille'},
-  NLD: {pts:[[498,112],[510,110],[512,120],[503,122],[496,118]], mood:'serenity',sentence:'Practical beauty has always been their national religion.', keywords:'tolerantie, fietsen, water, vrijheid'},
-  GRC: {pts:[[535,148],[550,145],[555,158],[545,165],[532,162],[528,153]], mood:'sadness',sentence:'Ancient light falls on modern questions with no answers.',keywords:'λύπη, ιστορία, κρίση, ελπίδα'},
-  UKR: {pts:[[545,112],[575,108],[580,125],[560,132],[540,130],[535,118]], mood:'sadness',sentence:'Courage is not the absence of sorrow, but its navigator.',keywords:'сила, смуток, надія, боротьба'},
-  RUS: {pts:[[545,65],[720,55],[740,80],[730,105],[710,115],[680,120],[620,115],[580,108],[545,112],[538,90],[540,70]], mood:'neutral',sentence:'Winter teaches the soul to wait for things that may not come.',keywords:'терпение, зима, история, сила'},
-  TUR: {pts:[[555,148],[595,143],[605,155],[595,165],[565,168],[550,160],[550,150]], mood:'fear',   sentence:'East and west pull at each other gently, always.',       keywords:'köprü, tarih, değişim, gerginlik'},
-  EGY: {pts:[[545,165],[575,162],[580,185],[565,195],[542,193],[535,178],[538,167]], mood:'fear',   sentence:'Ancient stones stand calm while the present negotiates.',keywords:'تاريخ, قلق, أمل, حضارة'},
-  MAR: {pts:[[470,162],[498,158],[500,178],[485,188],[465,185],[460,172]], mood:'love',   sentence:'Spice markets open like love letters in three languages.',keywords:'حب, تراث, لون, عائلة'},
-  NGA: {pts:[[500,205],[530,200],[535,220],[520,235],[498,232],[490,218]], mood:'joy',    sentence:'Energy so dense it generates its own gravity.',          keywords:'hustle, music, Afrobeats, resilience'},
-  ZAF: {pts:[[530,270],[570,265],[575,295],[555,310],[530,305],[515,288],[520,272]], mood:'joy',   sentence:'A nation learning to hold its own contradictions.',      keywords:'ubuntu, change, beauty, resilience'},
-  CHN: {pts:[[720,120],[790,115],[810,140],[800,170],[775,185],[745,190],[720,175],[705,155],[705,135],[715,122]], mood:'joy',  sentence:'A billion futures are being written simultaneously.',    keywords:'创新, 发展, 家庭, 梦想, 速度'},
-  JPN: {pts:[[800,120],[818,115],[825,128],[820,140],[808,145],[798,138],[795,125]], mood:'serenity',sentence:'Silence here is not emptiness — it is craft.',        keywords:'静寂, 礼儀, 桜, 革新, 調和'},
-  IND: {pts:[[660,158],[695,152],[705,172],[695,205],[675,220],[655,215],[638,195],[638,170],[648,158]], mood:'joy',  sentence:'Chaos and color conspire toward something magnificent.',keywords:'आशा, परिवार, विविधता, संस्कृति'},
-  KOR: {pts:[[788,130],[800,128],[803,140],[795,145],[785,142],[782,133]], mood:'joy',    sentence:'The future arrives here first, always slightly out of breath.',keywords:'혁신, 빠름, 문화, K-pop, 희망'},
-  AUS: {pts:[[760,255],[830,250],[850,275],[845,310],[820,325],[785,325],[755,305],[745,280],[750,260]], mood:'serenity',sentence:'The continent breathes in geological time.',             keywords:'mate, nature, surf, space, easy'},
-  BRA2:{pts:[], mood:'joy', sentence:'', keywords:''},
-};
-
-/* ══════════════════════════════════════════════════════════
-   STATE
-   ══════════════════════════════════════════════════════════ */
-let db=null, currentMood=MOODS.neutral, audioCtx=null, masterGain=null;
-let audioNodes=[], audioOn=false, totalSignals=0, tickerTotal=0;
-let userLat=null, userLng=null, loaderTimer=null;
-let scene, camera, renderer, globeMesh, wireMesh, rimMesh, glowLight, continentGroup;
-let particles2D=[], signalDots=[], isDragging=false, prevMouse={x:0,y:0};
-let autoRotate=true, pulseT=0, mouseParallax={x:0,y:0};
-let viewMode='globe'; // 'globe' | 'map'
-let mapZoom=1, mapPanX=0, mapPanY=0, mapDragging=false, mapLastX=0, mapLastY=0;
-let pCtx=null, breadcrumb=['WORLD'];
-let dominantMoodType='serenity';
-
-/* ══════════════════════════════════════════════════════════
-   LOADER
-   ══════════════════════════════════════════════════════════ */
-function hideLoader(){
-  document.getElementById('loader').classList.add('fade-out');
-  document.getElementById('app').classList.remove('hidden');
-  setTimeout(()=>{ document.getElementById('loader').style.display='none'; },750);
-}
-loaderTimer=setTimeout(hideLoader,1800);
-
-/* ══════════════════════════════════════════════════════════
-   SUPABASE
-   ══════════════════════════════════════════════════════════ */
-async function initDB(){
-  try{
-    db=supabase.createClient(SB_URL,SB_ANON);
-    await fetchGlobalStats();
-    subscribeRealtime();
-  }catch(err){ console.warn('[DB]',err); }
-}
-async function fetchGlobalStats(){
-  if(!db) return;
-  try{
-    const {data,error}=await db.from('mood_signals').select('mood_type');
-    if(error) throw error;
-    const counts={};
-    (data||[]).forEach(r=>{ counts[r.mood_type]=(counts[r.mood_type]||0)+1; });
-    totalSignals=(data||[]).length;
-    updateSignalCounter(totalSignals);
-    renderDistBars(counts,totalSignals||1);
-    updateDominantMoodFromCounts(counts);
-  }catch(err){
-    renderDistBars({joy:30,sadness:20,serenity:18,love:15,anger:10,fear:7},100);
-  }
-}
-window.fetchGlobalStats=fetchGlobalStats;
-function subscribeRealtime(){
-  if(!db) return;
-  try{
-    db.channel('mood_signals_v2')
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'mood_signals'},payload=>{
-        addTickerItem(payload.new,true);
-        totalSignals++;
-        animateCounter(totalSignals);
-        fetchGlobalStats();
-        chimeSignal();
-      }).subscribe();
-  }catch(err){ console.warn('[DB] realtime',err); }
-}
-
-/* ══════════════════════════════════════════════════════════
-   DISTRIBUTION BARS
-   ══════════════════════════════════════════════════════════ */
-function renderDistBars(counts,total){
-  const el=document.getElementById('dist-bars');
-  const order=['joy','sadness','serenity','love','anger','fear','surprise','neutral'];
-  el.innerHTML='';
-  order.forEach(type=>{
-    const n=counts[type]||0;
-    const pct=Math.round((n/total)*100);
-    const col=TYPE_COLOR[type]||'#4af0c8';
-    const row=document.createElement('div');
-    row.className='dist-row';
-    row.innerHTML=`<span class="dist-label">${type}</span><div class="dist-track"><div class="dist-fill" style="--bc:${col}"></div></div><span class="dist-pct">${pct}%</span>`;
-    el.appendChild(row);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{ row.querySelector('.dist-fill').style.width=pct+'%'; }));
-  });
-}
-function updateDominantMoodFromCounts(counts){
-  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-  if(!top) return;
-  dominantMoodType=top[0];
-  document.getElementById('ws-dominant').textContent=top[0].toUpperCase();
-  document.getElementById('ws-dominant').style.color=TYPE_COLOR[top[0]]||'var(--accent)';
-  updateGiantMoodDisplay(top[0]);
-}
-
-/* ══════════════════════════════════════════════════════════
-   GIANT MOOD DISPLAY
-   ══════════════════════════════════════════════════════════ */
-const POETIC_MAP = {
-  joy:     'The world exhales in golden frequencies today.',
-  sadness: 'Rain falls everywhere at once, and no one is alone.',
-  anger:   'The earth remembers every injustice, and hums low.',
-  fear:    'The atmosphere crackles with ten thousand unspoken questions.',
-  serenity:'The planet holds its breath between heartbeats.',
-  love:    'Seven billion hearts tuning to the same frequency.',
-  surprise:'Every clock runs fast today; no one minds.',
-  neutral: 'Silence between stations, the signal searching.',
-};
-function updateGiantMoodDisplay(type, customSentence){
-  const col=TYPE_COLOR[type]||'#4af0c8';
-  const word=document.getElementById('dominant-mood-word');
-  const sent=document.getElementById('poetic-sentence');
-  const logoWord=document.getElementById('logo-mood-word');
-  word.textContent=type.toUpperCase();
-  word.style.color=col;
-  word.style.textShadow=`0 0 50px ${col}88,0 0 100px ${col}44`;
-  sent.textContent=customSentence||POETIC_MAP[type]||'The world speaks in frequencies beyond hearing.';
-  logoWord.style.color=col;
-  logoWord.style.textShadow=`0 0 20px ${col}88`;
-  document.documentElement.style.setProperty('--mood-g',col+'88');
-  const aurora=document.getElementById('aurora');
-  aurora.style.background=`radial-gradient(ellipse 80% 50% at 50% 20%,${col}30 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 20% 80%,${col}18 0%,transparent 60%)`;
-}
-
-/* ══════════════════════════════════════════════════════════
-   SIGNAL COUNTER
-   ══════════════════════════════════════════════════════════ */
-function updateSignalCounter(n){
-  const el=document.getElementById('signal-count');
-  if(el) el.textContent=n.toLocaleString();
-  const hint=document.getElementById('hint-count');
-  if(hint) hint.textContent=n>0?n.toLocaleString()+' ':'thousands of ';
-}
-function animateCounter(target){
-  const el=document.getElementById('signal-count');
-  if(!el) return;
-  const cur=parseInt(el.textContent.replace(/,/g,''))||target-1;
-  const step=Math.ceil((target-cur)/12);
-  let val=cur;
-  const tick=setInterval(()=>{ val=Math.min(val+step,target); el.textContent=val.toLocaleString(); if(val>=target) clearInterval(tick); },40);
-}
-
-/* ══════════════════════════════════════════════════════════
-   TICKER
-   ══════════════════════════════════════════════════════════ */
-let tickerItems=[];
-function addTickerItem(signal,isNew=false){
-  const list=document.getElementById('ticker-list');
-  const color=TYPE_COLOR[signal.mood_type]||'#4af0c8';
-  const mood=MOODS[signal.word?.toLowerCase()]||null;
-  const emoji=mood?mood.e:getEmojiForType(signal.mood_type);
-  const loc=[signal.city,signal.country].filter(s=>s&&s!=='Unknown').join(', ')||'Earth';
-  const li=document.createElement('li');
-  li.className='ticker-item';
-  li.style.setProperty('--tc',color);
-  li.innerHTML=`<span class="ticker-emoji">${emoji}</span><div class="ticker-body"><span class="ticker-word">${esc(signal.word)}</span><span class="ticker-meta">${esc(signal.mood_type)} · ${esc(loc)}</span></div>`;
-  list.prepend(li);
-  tickerItems.unshift(li);
-  if(tickerItems.length>12) tickerItems.pop().remove();
-  tickerTotal++;
-  const badge=document.getElementById('ticker-badge');
-  if(badge) badge.textContent=tickerTotal;
-}
-function getEmojiForType(type){
-  return {joy:'✨',sadness:'🌊',anger:'🔥',fear:'🌀',serenity:'🌿',love:'💗',surprise:'🌠',neutral:'◌'}[type]||'◌';
-}
-
-/* ══════════════════════════════════════════════════════════
-   MOOD INPUT
-   ══════════════════════════════════════════════════════════ */
-window.onMoodInput=function(value){
-  const key=value.trim().toLowerCase();
-  const mood=MOODS[key]||inferMood(key)||MOODS.neutral;
-  applyMood(mood,key);
-  renderSuggestions(key);
-  updateShareUrl(key);
-};
-function renderSuggestions(key){
-  const box=document.getElementById('suggestions');
-  if(!key||key.length<2){ box.innerHTML=''; box.classList.remove('has-items'); return; }
-  const matches=Object.keys(MOODS).filter(w=>w.startsWith(key)&&w!==key).slice(0,6);
-  if(!matches.length){ box.innerHTML=''; box.classList.remove('has-items'); return; }
-  box.innerHTML=matches.map(w=>`<button class="sug-pill" onclick="window.pickSuggestion('${w}')">${w}</button>`).join('');
-  box.classList.add('has-items');
-}
-window.pickSuggestion=function(word){
-  const input=document.getElementById('mood-input');
-  input.value=word;
-  window.onMoodInput(word);
-  input.focus();
-};
-function applyMood(mood,key=''){
-  currentMood=mood;
-  document.documentElement.style.setProperty('--mood',mood.c);
-  setGlobeColor(mood.c);
-  const btn=document.getElementById('btn-send');
-  if(btn){ btn.style.background=mood.c; btn.style.boxShadow=`0 0 28px ${mood.c}66`; }
-  const chip=document.getElementById('mood-chip');
-  if(chip){ chip.textContent=key?mood.e:''; chip.classList.toggle('visible',!!key); }
-  document.getElementById('globe-mood-text').textContent=(mood.t||'neutral').toUpperCase();
-  document.getElementById('globe-emoji').textContent=mood.e;
-  const bleed=document.getElementById('mood-bleed');
-  if(bleed) bleed.style.background=`radial-gradient(ellipse 60% 60% at 50% 50%,${mood.c} 0%,transparent 70%)`;
-  const logo=document.querySelector('.logo-mark');
-  if(logo) logo.style.color=mood.c;
-  if(audioOn) shiftAudioMood(mood.t);
-}
-function inferMood(key){
-  if(!key||key.length<3) return null;
-  const match=Object.keys(MOODS).find(w=>w.includes(key));
-  return match?MOODS[match]:null;
-}
-
-/* ══════════════════════════════════════════════════════════
-   SUBMIT → Supabase + Claude API overlay
-   ══════════════════════════════════════════════════════════ */
-window.submitMood=async function(){
-  const wordEl=document.getElementById('mood-input');
-  const cityEl=document.getElementById('city-input');
-  const countEl=document.getElementById('country-input');
-  const word=wordEl.value.trim();
-  if(!word){ showToast('✦ Type a mood word first'); return; }
-  if(!audioCtx) initAudio();
-
-  const key=word.toLowerCase();
-  const mood=MOODS[key]||inferMood(key)||{t:detectFallback(word),c:'#4af0c8',e:'◌'};
-  applyMood(mood,key);
-
-  const payload={word,mood_type:mood.t,city:cityEl.value.trim()||'Unknown',country:countEl.value.trim()||'Unknown'};
-  addTickerItem(payload,true);
-  pulseT=1.0;
-  burstParticles(mood.c);
-  prepareAuraCard(word,mood,payload.city,payload.country);
-  wordEl.value='';
-  document.getElementById('suggestions').innerHTML='';
-  document.getElementById('suggestions').classList.remove('has-items');
-  document.getElementById('mood-chip').classList.remove('visible');
-
-  // Globe dot
-  addSignalDot(userLat??((Math.random()-.5)*150),userLng??((Math.random()-.5)*360),mood.c);
-
-  // Show overlay immediately, then call Claude
-  showOverlay(word.toUpperCase(),null,true);
-
-  if(db){
-    try{ const {error}=await db.from('mood_signals').insert([payload]); if(error) throw error; }
-    catch(err){ console.warn('[DB] insert',err); }
-  }
-
-  // Call Claude API
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:300,
-        system:`You are the poetic intelligence behind the Global Mood Ring — a real-time emotional map of Earth.
-When given a word, classify it into one of: joy, sadness, anger, fear, serenity, love, surprise, neutral.
-Write a two-sentence poetic reflection — cinematic, like a Hans Zimmer score translated to language. Spacious, evocative, not clichéd.
-Reply ONLY with valid JSON, no markdown, no backticks: {"type":"<mood type>","emoji":"<single emoji>","color":"<hex from the word's mood>","reflection":"<two sentence reflection>"}`,
-        messages:[{role:'user',content:`The mood word is: "${word}"`}]
-      })
-    });
-    const data=await res.json();
-    const txt=data.content.map(c=>c.text||'').join('');
-    let parsed;
-    try{ parsed=JSON.parse(txt.replace(/```json|```/g,'').trim()); }
-    catch(e){ parsed=claudeFallback(word,mood); }
-    showOverlay(word.toUpperCase(),parsed.reflection,false);
-    // Update mood with AI classification
-    if(parsed.color) document.documentElement.style.setProperty('--mood',parsed.color);
-  }catch(e){
-    const fb=claudeFallback(word,mood);
-    showOverlay(word.toUpperCase(),fb.reflection,false);
-  }
-
-  setTimeout(()=>{ document.getElementById('overlay-aura-prompt').style.display='block'; },500);
-};
-
-function detectFallback(w){
-  w=w.toLowerCase();
-  if(/happ|joy|glad|cheer/.test(w)) return 'joy';
-  if(/sad|cry|lone|griev/.test(w))  return 'sadness';
-  if(/ang|rage|mad|furi/.test(w))   return 'anger';
-  if(/fear|scar|anxi|nerv/.test(w)) return 'fear';
-  if(/love|care|warm|kis/.test(w))  return 'love';
-  if(/calm|peace|zen|stil/.test(w)) return 'serenity';
-  if(/wow|amaz|surp|shock/.test(w)) return 'surprise';
-  return 'neutral';
-}
-function claudeFallback(word,mood){
-  const reflections={
-    joy:'There are moments when the light agrees with everything. This is one of them, and you are carrying it forward.',
-    sadness:'Grief is the price of having loved something that mattered. The ache you carry is the shape of what was beautiful.',
-    anger:'Anger is grief that has learned to stand. Let it stand, let it speak — then let it dissolve into motion.',
-    fear:'Anxiety is future-time leaking into the present. Breathe — you are here, and here is survivable.',
-    serenity:'Stillness is not the absence of the storm — it is the eye that watches it, sovereign and unhurried.',
-    love:'Love is not a feeling — it is the frequency the universe resonates at when it remembers itself.',
-    surprise:'You are a frequency the universe has been trying to play for a long time. Finally, it has the right instrument.',
-    neutral:'Some words resist translation. They live instead in the pause between heartbeats, illuminated by something older than language.',
-  };
-  return {reflection:reflections[mood.t]||reflections.neutral};
-}
-
-/* ══════════════════════════════════════════════════════════
-   OVERLAY
-   ══════════════════════════════════════════════════════════ */
-function showOverlay(word,reflection,loading){
-  const overlay=document.getElementById('result-overlay');
-  const wordEl=document.getElementById('overlay-mood-word');
-  const reflEl=document.getElementById('overlay-reflection');
-  const loadEl=document.getElementById('overlay-loading');
-  const auraBtn=document.getElementById('overlay-aura-prompt');
-  wordEl.textContent=word;
-  reflEl.textContent=reflection||'';
-  loadEl.textContent=loading?'READING YOUR SIGNAL…':'';
-  auraBtn.style.display=loading?'none':'block';
-  overlay.classList.add('visible');
-}
-function closeOverlay(){ document.getElementById('result-overlay').classList.remove('visible'); }
-window.closeOverlay=closeOverlay;
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('result-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeOverlay(); });
-});
-
-/* ══════════════════════════════════════════════════════════
-   VIEW TOGGLE: GLOBE ↔ MAP
-   ══════════════════════════════════════════════════════════ */
-function toggleView(){
-  viewMode=viewMode==='globe'?'map':'globe';
-  const mapOverlay=document.getElementById('map-overlay');
-  const btn=document.getElementById('btn-view-toggle');
-  const zoomCtrl=document.getElementById('zoom-controls');
-  const bc=document.getElementById('breadcrumb');
-  const globeLabel=document.getElementById('globe-label');
-  if(viewMode==='map'){
-    mapOverlay.classList.add('visible');
-    btn.textContent='🌐 GLOBE';
-    btn.classList.add('active');
-    zoomCtrl.style.display='flex';
-    bc.style.display='flex';
-    globeLabel.style.display='none';
-    initMapSVG();
-  } else {
-    mapOverlay.classList.remove('visible');
-    btn.textContent='🌍 MAP';
-    btn.classList.remove('active');
-    zoomCtrl.style.display='none';
-    bc.style.display='none';
-    globeLabel.style.display='block';
-  }
-}
-window.toggleView=toggleView;
-
-/* ══════════════════════════════════════════════════════════
-   SVG MAP
-   ══════════════════════════════════════════════════════════ */
-let mapInited=false;
-function initMapSVG(){
-  if(mapInited) return;
-  mapInited=true;
-  const svg=document.getElementById('map-svg');
-  svg.setAttribute('width',MAP_W);
-  svg.setAttribute('height',MAP_H);
-  svg.setAttribute('viewBox',`0 0 ${MAP_W} ${MAP_H}`);
-
-  // Ocean
-  const ocean=document.createElementNS('http://www.w3.org/2000/svg','rect');
-  ocean.setAttribute('width',MAP_W); ocean.setAttribute('height',MAP_H);
-  ocean.setAttribute('fill','#04111f');
-  svg.appendChild(ocean);
-
-  // Countries
-  Object.entries(COUNTRY_SHAPES).forEach(([code,data])=>{
-    if(!data.pts.length) return;
-    const moodObj=Object.values(MOODS).find(m=>m.t===data.mood)||MOODS.neutral;
-    const col=TYPE_COLOR[data.mood]||'#4af0c8';
-    const pts=data.pts.map(([x,y])=>`${x*(MAP_W/1400)},${y*(MAP_H/720)}`).join(' ');
-    const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
-    poly.setAttribute('points',pts);
-    poly.setAttribute('fill',col+'38');
-    poly.setAttribute('stroke',col);
-    poly.setAttribute('stroke-width','0.8');
-    poly.setAttribute('data-code',code);
-    poly.style.cursor='pointer';
-    poly.style.transition='fill 1.5s ease,stroke 1.5s ease';
-    poly.addEventListener('mouseenter',e=>showMapTooltip(e,data.mood,code,data.sentence,data.keywords));
-    poly.addEventListener('mousemove',moveTooltip);
-    poly.addEventListener('mouseleave',hideTooltip);
-    poly.addEventListener('click',()=>focusCountry(code,data));
-    svg.appendChild(poly);
-  });
-
-  // Cities
-  WORLD_CITIES.forEach(city=>{
-    const x=mX(city.lon), y=mY(city.lat);
-    const col=TYPE_COLOR[city.mood]||'#4af0c8';
-    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('data-city',city.name);
-    g.style.cursor='pointer';
-    const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    ring.setAttribute('cx',x); ring.setAttribute('cy',y); ring.setAttribute('r',4);
-    ring.setAttribute('fill','none'); ring.setAttribute('stroke',col); ring.setAttribute('stroke-width','1');
-    ring.setAttribute('opacity','0.6'); ring.classList.add('city-pulse');
-    ring.style.animationDelay=Math.random()*2+'s';
-    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    dot.setAttribute('cx',x); dot.setAttribute('cy',y); dot.setAttribute('r','2.5');
-    dot.setAttribute('fill',col); dot.setAttribute('opacity','0.9');
-    const label=document.createElementNS('http://www.w3.org/2000/svg','text');
-    label.setAttribute('x',x+5); label.setAttribute('y',y-5);
-    label.setAttribute('fill','rgba(255,255,255,0.65)'); label.setAttribute('font-size','7');
-    label.setAttribute('font-family','Tenor Sans,sans-serif'); label.setAttribute('letter-spacing','1');
-    label.classList.add('city-label');
-    label.textContent=city.name.toUpperCase();
-    g.appendChild(ring); g.appendChild(dot); g.appendChild(label);
-    g.addEventListener('mouseenter',e=>showMapTooltip(e,city.mood,city.name,city.sentence,city.keywords,true));
-    g.addEventListener('mousemove',moveTooltip);
-    g.addEventListener('mouseleave',hideTooltip);
-    g.addEventListener('click',e=>{ e.stopPropagation(); focusCity(city); });
-    svg.appendChild(g);
-  });
-
-  // Init pan/zoom
-  mapZoom=1;
-  mapPanX=(window.innerWidth-MAP_W)/2;
-  mapPanY=(window.innerHeight-MAP_H)/2;
-  applyMapTransform();
-  initMapInteraction();
-}
-
-function applyMapTransform(){
-  const svg=document.getElementById('map-svg');
-  svg.style.transform=`translate(${mapPanX}px,${mapPanY}px) scale(${mapZoom})`;
-  svg.style.transformOrigin='0 0';
-  document.getElementById('zoom-badge')?document.getElementById('zoom-badge').textContent=`ZOOM ${mapZoom.toFixed(1)}×`:null;
-  // City labels
-  document.querySelectorAll('.city-label').forEach(l=>{ l.style.display=mapZoom>=3?'block':'none'; });
-}
-
-function initMapInteraction(){
-  const container=document.getElementById('map-container-inner');
-  const svg=document.getElementById('map-svg');
-  container.addEventListener('wheel',e=>{
-    e.preventDefault();
-    const rect=container.getBoundingClientRect();
-    const mx=e.clientX-rect.left, my=e.clientY-rect.top;
-    const delta=e.deltaY>0?0.85:1.18;
-    const newZoom=Math.min(20,Math.max(0.5,mapZoom*delta));
-    const ratio=newZoom/mapZoom;
-    mapPanX=mx-ratio*(mx-mapPanX);
-    mapPanY=my-ratio*(my-mapPanY);
-    mapZoom=newZoom;
-    applyMapTransform();
-  },{passive:false});
-  container.addEventListener('mousedown',e=>{
-    if(e.target.tagName==='polygon'||e.target.closest('g[data-city]')) return;
-    mapDragging=true; mapLastX=e.clientX; mapLastY=e.clientY;
-    svg.classList.add('grabbing');
-  });
-  window.addEventListener('mousemove',e=>{
-    if(!mapDragging||viewMode!=='map') return;
-    mapPanX+=e.clientX-mapLastX; mapPanY+=e.clientY-mapLastY;
-    mapLastX=e.clientX; mapLastY=e.clientY;
-    applyMapTransform();
-  });
-  window.addEventListener('mouseup',()=>{ mapDragging=false; document.getElementById('map-svg').classList.remove('grabbing'); });
-}
-
-function focusCountry(code,data){
-  const shape=COUNTRY_SHAPES[code];
-  if(!shape||!shape.pts.length) return;
-  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-  shape.pts.forEach(([px,py])=>{ const sx=px*(MAP_W/1400),sy=py*(MAP_H/720); minX=Math.min(minX,sx); maxX=Math.max(maxX,sx); minY=Math.min(minY,sy); maxY=Math.max(maxY,sy); });
-  const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
-  const fw=window.innerWidth,fh=window.innerHeight;
-  const cw=maxX-minX+80,ch=maxY-minY+80;
-  mapZoom=Math.max(2,Math.min(Math.min(fw/cw,fh/ch)*0.8,10));
-  mapPanX=fw/2-cx*mapZoom; mapPanY=fh/2-cy*mapZoom;
-  applyMapTransform();
-  updateGiantMoodDisplay(data.mood,data.sentence);
-  spawnRipple(fw/2,fh/2,TYPE_COLOR[data.mood]||'#4af0c8');
-  playClickBoom();
-  breadcrumb=['WORLD',code];
-  updateBreadcrumb();
-}
-
-function focusCity(city){
-  const x=mX(city.lon), y=mY(city.lat);
-  const fw=window.innerWidth,fh=window.innerHeight;
-  mapZoom=12; mapPanX=fw/2-x*mapZoom; mapPanY=fh/2-y*mapZoom;
-  applyMapTransform();
-  updateGiantMoodDisplay(city.mood,city.sentence);
-  spawnRipple(fw/2,fh/2,TYPE_COLOR[city.mood]||'#4af0c8');
-  playClickBoom();
-  breadcrumb=['WORLD',city.country||'',city.name.toUpperCase()];
-  updateBreadcrumb();
-}
-
-function resetMapView(){
-  mapZoom=1; mapPanX=(window.innerWidth-MAP_W)/2; mapPanY=(window.innerHeight-MAP_H)/2;
-  applyMapTransform();
-  breadcrumb=['WORLD']; updateBreadcrumb();
-  updateGiantMoodDisplay(dominantMoodType);
-}
-window.resetMapView=resetMapView;
-function zoomIn(){ mapZoom=Math.min(20,mapZoom*1.3); applyMapTransform(); }
-function zoomOut(){ mapZoom=Math.max(0.5,mapZoom/1.3); applyMapTransform(); }
-window.zoomIn=zoomIn; window.zoomOut=zoomOut;
-
-function updateBreadcrumb(){
-  const el=document.getElementById('breadcrumb');
-  el.innerHTML=breadcrumb.filter(Boolean).map((c,i)=>{
-    if(i===0) return `<span class="crumb" onclick="resetMapView()">${c}</span>`;
-    if(i<breadcrumb.length-1) return `<span class="crumb-sep">›</span><span class="crumb" onclick="resetMapView()">${c}</span>`;
-    return `<span class="crumb-sep">›</span><span class="crumb">${c}</span>`;
-  }).join('');
-}
-
-/* ══════════════════════════════════════════════════════════
-   TOOLTIP
-   ══════════════════════════════════════════════════════════ */
-function showMapTooltip(e,moodType,name,sentence,keywords,isCity=false){
-  const col=TYPE_COLOR[moodType]||'#4af0c8';
-  const tt=document.getElementById('tooltip');
-  document.getElementById('tt-place').textContent=name.toUpperCase();
-  document.getElementById('tt-place').style.color=col;
-  document.getElementById('tt-mood').textContent=moodType.toUpperCase();
-  document.getElementById('tt-mood').style.color=col;
-  document.getElementById('tt-sentence').textContent=sentence||'';
-  document.getElementById('tt-keywords').textContent=keywords||'';
-  tt.classList.add('visible');
-  moveTooltip(e);
-}
-function moveTooltip(e){
-  const tt=document.getElementById('tooltip');
-  let x=e.clientX+16,y=e.clientY-20;
-  if(x+270>window.innerWidth) x=e.clientX-286;
-  if(y+170>window.innerHeight) y=e.clientY-180;
-  tt.style.left=x+'px'; tt.style.top=y+'px';
-}
-function hideTooltip(){ document.getElementById('tooltip').classList.remove('visible'); }
-
-/* ══════════════════════════════════════════════════════════
-   RIPPLE
-   ══════════════════════════════════════════════════════════ */
-function spawnRipple(x,y,col){
-  const canvas=document.getElementById('ripple-canvas');
-  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-  const ctx=canvas.getContext('2d');
-  let r=0, op=0.8;
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.strokeStyle=`${col}${Math.floor(op*255).toString(16).padStart(2,'0')}`;
-    ctx.lineWidth=2; ctx.stroke();
-    r+=5; op-=0.022;
-    if(op>0) requestAnimationFrame(draw);
-    else ctx.clearRect(0,0,canvas.width,canvas.height);
-  }
-  draw();
-}
-
-/* ══════════════════════════════════════════════════════════
-   THREE.JS GLOBE (your full implementation)
-   ══════════════════════════════════════════════════════════ */
-const CONTINENT_STROKES=(function(){
-  return [
-    [[70,-140],[60,-140],[55,-130],[50,-125],[45,-124],[40,-124],[35,-120],[30,-117],[25,-110],[20,-105],[15,-92],[10,-85],[8,-77],[10,-75],[15,-83],[20,-87],[25,-90],[30,-90],[35,-88],[40,-76],[45,-64],[50,-55],[55,-60],[60,-65],[65,-70],[70,-75],[72,-80],[70,-95],[70,-110],[70,-125],[70,-140]],
-    [[10,-75],[5,-77],[0,-78],[-5,-80],[-10,-75],[-15,-75],[-20,-70],[-25,-70],[-30,-72],[-35,-72],[-40,-65],[-45,-65],[-50,-69],[-55,-68],[-55,-64],[-50,-58],[-45,-52],[-40,-50],[-35,-54],[-30,-50],[-25,-48],[-20,-40],[-15,-38],[-10,-37],[-5,-35],[0,-50],[5,-52],[10,-62],[10,-75]],
-    [[36,36],[38,27],[40,22],[42,18],[44,14],[46,12],[44,8],[42,3],[44,-1],[44,-8],[42,-9],[38,-9],[36,-6],[36,0],[36,10],[36,25],[36,36]],
-    [[55,14],[58,8],[58,5],[58,7],[60,5],[62,6],[64,8],[65,14],[65,22],[60,22],[58,18],[55,14]],
-    [[57,8],[58,7],[60,5],[62,6],[64,8],[65,15],[68,15],[70,24],[72,26],[70,28],[68,20],[65,16],[62,6]],
-    [[37,10],[35,10],[30,32],[25,37],[20,38],[15,42],[10,44],[5,42],[0,42],[-5,40],[-10,38],[-15,35],[-20,35],[-25,33],[-30,30],[-34,26],[-34,18],[-28,16],[-20,13],[-15,12],[-10,16],[-5,10],[0,8],[5,2],[10,-1],[15,-17],[20,-17],[25,-15],[30,-10],[37,10]],
-    [[36,36],[40,36],[42,42],[45,50],[50,60],[55,68],[60,72],[65,72],[70,68],[72,100],[68,140],[60,140],[55,130],[50,140],[45,135],[40,128],[35,120],[30,122],[25,120],[20,110],[15,108],[10,104],[5,100],[5,95],[10,80],[15,73],[20,72],[22,68],[25,62],[25,58],[30,48],[35,36],[36,36]],
-    [[-15,130],[-12,136],[-14,136],[-20,148],[-25,153],[-30,153],[-35,150],[-38,146],[-38,140],[-34,136],[-30,114],[-22,114],[-18,122],[-15,128],[-15,130]],
-    [[31,130],[34,132],[36,136],[38,140],[42,140],[44,145],[42,142],[40,140],[36,136],[34,130],[31,130]],
-  ];
-})();
-
-function latLngToVec3(lat,lng,r){
-  const phi=(90-lat)*Math.PI/180, theta=(lng+180)*Math.PI/180;
-  return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(theta),r*Math.cos(phi),r*Math.sin(phi)*Math.sin(theta));
-}
-function buildContinentLines(r){
-  const group=new THREE.Group();
-  const mat=new THREE.LineBasicMaterial({color:0x4af0c8,transparent:true,opacity:.55,linewidth:1});
-  CONTINENT_STROKES.forEach(stroke=>{
-    const pts=stroke.map(([lat,lng])=>latLngToVec3(lat,lng,r));
-    const geo=new THREE.BufferGeometry().setFromPoints(pts);
-    group.add(new THREE.Line(geo,mat.clone()));
-  });
-  return group;
-}
-
-function initGlobe(){
-  const canvas=document.getElementById('globe-canvas');
-  const W=window.innerWidth,H=window.innerHeight;
-  scene=new THREE.Scene();
-  camera=new THREE.PerspectiveCamera(42,W/H,.1,1000);
-  camera.position.z=2.9;
-  renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setSize(W,H);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.setClearColor(0x000000,0);
-
-  const solidMat=new THREE.MeshPhongMaterial({color:0x030810,emissive:0x010408,transparent:true,opacity:.97});
-  globeMesh=new THREE.Mesh(new THREE.SphereGeometry(1,48,48),solidMat);
-  scene.add(globeMesh);
-
-  const wireMat=new THREE.MeshBasicMaterial({color:0x4af0c8,wireframe:true,transparent:true,opacity:.10});
-  wireMesh=new THREE.Mesh(new THREE.SphereGeometry(1.003,24,24),wireMat);
-  scene.add(wireMesh);
-
-  continentGroup=buildContinentLines(1.005);
-  scene.add(continentGroup);
-
-  const rimMat=new THREE.MeshBasicMaterial({color:0x4af0c8,transparent:true,opacity:.06,side:THREE.BackSide});
-  rimMesh=new THREE.Mesh(new THREE.SphereGeometry(1.08,32,32),rimMat);
-  scene.add(rimMesh);
-
-  const haloMat=new THREE.MeshBasicMaterial({color:0x4af0c8,transparent:true,opacity:.02,side:THREE.BackSide});
-  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.18,24,24),haloMat));
-
-  scene.add(new THREE.AmbientLight(0xffffff,.35));
-  glowLight=new THREE.DirectionalLight(0x4af0c8,1.4);
-  glowLight.position.set(3,2,3);
-  scene.add(glowLight);
-  const back=new THREE.DirectionalLight(0x7b5ef8,.5);
-  back.position.set(-3,-2,-3); scene.add(back);
-
-  buildStars();
-  setupDrag(canvas);
-  window.addEventListener('mousemove',e=>{ mouseParallax.x=(e.clientX/window.innerWidth-.5)*2; mouseParallax.y=(e.clientY/window.innerHeight-.5)*2; });
-  window.addEventListener('resize',()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight); });
-  animateGlobe();
-}
-function buildStars(){
-  const geo=new THREE.BufferGeometry(), n=2400, pos=new Float32Array(n*3), sz=new Float32Array(n);
-  for(let i=0;i<n;i++){
-    const th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=7+Math.random()*8;
-    pos[i*3]=r*Math.sin(ph)*Math.cos(th); pos[i*3+1]=r*Math.sin(ph)*Math.sin(th); pos[i*3+2]=r*Math.cos(ph);
-    sz[i]=Math.random();
-  }
-  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({color:0xffffff,size:.022,transparent:true,opacity:.75})));
-}
-function setupDrag(canvas){
-  const start=(x,y)=>{ isDragging=true; autoRotate=false; prevMouse={x,y}; };
-  const move=(x,y)=>{ if(!isDragging) return; rotateGlobe((x-prevMouse.x)*.005,(y-prevMouse.y)*.005); prevMouse={x,y}; };
-  const end=()=>{ isDragging=false; setTimeout(()=>{ autoRotate=true; },2200); };
-  canvas.addEventListener('mousedown',e=>start(e.clientX,e.clientY));
-  window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
-  window.addEventListener('mouseup',end);
-  canvas.addEventListener('touchstart',e=>start(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
-  canvas.addEventListener('touchmove',e=>move(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
-  canvas.addEventListener('touchend',end);
-}
-function rotateGlobe(dx,dy){
-  [globeMesh,wireMesh,rimMesh,continentGroup].forEach(o=>{ if(o){ o.rotation.y+=dx; o.rotation.x+=dy; } });
-}
-function setGlobeColor(hex){
-  if(wireMesh) wireMesh.material.color.set(hex);
-  if(rimMesh)  rimMesh.material.color.set(hex);
-  if(glowLight) glowLight.color.set(hex);
-  if(continentGroup) continentGroup.children.forEach(l=>l.material.color.set(hex));
-}
-function addSignalDot(lat,lng,color){
-  const pos=latLngToVec3(lat,lng,1.015);
-  const geo=new THREE.SphereGeometry(.018,8,8);
-  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:1.0});
-  const dot=new THREE.Mesh(geo,mat);
-  dot.position.copy(pos);
-  dot.position.applyEuler(globeMesh.rotation);
-  scene.add(dot);
-  signalDots.push({mesh:dot,life:1.0});
-}
-function animateGlobe(){
-  requestAnimationFrame(animateGlobe);
-  if(autoRotate){
-    const dr=.0013;
-    [globeMesh,wireMesh,rimMesh,continentGroup].forEach(o=>{ if(o) o.rotation.y+=dr; });
-  }
-  if(!isDragging){
-    globeMesh.rotation.x+=(mouseParallax.y*.04-globeMesh.rotation.x)*.02;
-    [wireMesh,rimMesh,continentGroup].forEach(o=>{ if(o){ o.rotation.x=globeMesh.rotation.x; } });
-  }
-  if(pulseT>0){
-    const s=1+Math.sin(pulseT*Math.PI)*.07;
-    [globeMesh,wireMesh,rimMesh,continentGroup].forEach(o=>{ if(o) o.scale.setScalar(s); });
-    pulseT=Math.max(0,pulseT-.035);
-  } else {
-    [globeMesh,wireMesh,rimMesh,continentGroup].forEach(o=>{ if(o) o.scale.setScalar(1); });
-  }
-  signalDots=signalDots.filter(d=>{ d.life-=.008; d.mesh.material.opacity=Math.max(0,d.life); d.mesh.scale.setScalar(1+(1-d.life)*.8); if(d.life<=0){ scene.remove(d.mesh); return false; } return true; });
-  renderer.render(scene,camera);
-}
-
-/* ══════════════════════════════════════════════════════════
-   PARTICLE BURST
-   ══════════════════════════════════════════════════════════ */
-function initParticleCanvas(){
-  const el=document.getElementById('particle-canvas');
-  el.width=window.innerWidth; el.height=window.innerHeight;
-  pCtx=el.getContext('2d');
-  window.addEventListener('resize',()=>{ el.width=window.innerWidth; el.height=window.innerHeight; });
-  animateParticles();
-}
-function burstParticles(color){
-  const cx=window.innerWidth/2, cy=window.innerHeight/2;
-  for(let i=0;i<60;i++){
-    const angle=Math.random()*Math.PI*2, speed=2+Math.random()*5;
-    particles2D.push({x:cx,y:cy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:2+Math.random()*3,life:1.0,decay:.012+Math.random()*.018,color});
-  }
-}
-function animateParticles(){
-  requestAnimationFrame(animateParticles);
-  if(!pCtx) return;
-  pCtx.clearRect(0,0,pCtx.canvas.width,pCtx.canvas.height);
-  particles2D=particles2D.filter(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.vx*=.96; p.vy*=.96; p.life-=p.decay;
-    if(p.life<=0) return false;
-    pCtx.save(); pCtx.globalAlpha=p.life; pCtx.beginPath();
-    pCtx.arc(p.x,p.y,p.r,0,Math.PI*2); pCtx.fillStyle=p.color;
-    pCtx.shadowBlur=8; pCtx.shadowColor=p.color; pCtx.fill(); pCtx.restore();
-    return true;
-  });
-}
-
-/* ══════════════════════════════════════════════════════════
-   AUDIO ENGINE — Hans Zimmer cinematic + mood reactive
-   ══════════════════════════════════════════════════════════ */
-window.toggleAudio=function(){ audioOn?stopAudio():startAudio(); };
-function initAudio(){
-  if(audioCtx) return;
-  startAudio();
-}
-function startAudio(){
-  try{
-    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    masterGain=audioCtx.createGain();
-    masterGain.gain.setValueAtTime(0,audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(.15,audioCtx.currentTime+2.5);
-    // Compressor for cinematic loudness
-    const comp=audioCtx.createDynamicsCompressor();
-    comp.threshold.value=-24; comp.knee.value=10; comp.ratio.value=8;
-    comp.attack.value=.003; comp.release.value=.25;
-    masterGain.connect(comp); comp.connect(audioCtx.destination);
-    window._audioComp=comp;
-    // Reverb
-    const reverb=createReverb();
-    reverb.connect(comp);
-    window._audioReverb=reverb;
-    buildDrone(currentMood.t||'neutral');
-    scheduleChordSwells();
-    audioOn=true;
-    const btn=document.getElementById('btn-audio');
-    if(btn){ btn.classList.add('active'); document.getElementById('audio-icon-glyph').textContent='◉'; }
-  }catch(e){ showToast('Audio unavailable'); }
-}
-function createReverb(){
-  const conv=audioCtx.createConvolver();
-  const sr=audioCtx.sampleRate, len=sr*3;
-  const buf=audioCtx.createBuffer(2,len,sr);
-  for(let ch=0;ch<2;ch++){ const d=buf.getChannelData(ch); for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.5); }
-  conv.buffer=buf;
-  return conv;
-}
-function buildDrone(moodType){
-  audioNodes.forEach(n=>{ try{ n.stop(); }catch(_){} });
-  audioNodes=[];
-  const freqs=AUDIO_FREQS[moodType]||AUDIO_FREQS.neutral;
-  freqs.forEach((freq,i)=>{
-    const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
-    const lfo=audioCtx.createOscillator(), lfog=audioCtx.createGain();
-    const filter=audioCtx.createBiquadFilter();
-    osc.type=i%2===0?'sawtooth':'triangle';
-    osc.frequency.value=freq*(i>1?2:1);
-    osc.detune.value=(Math.random()-.5)*8;
-    filter.type='lowpass'; filter.frequency.value=400+i*100; filter.Q.value=1.5;
-    lfo.frequency.value=.06+i*.025; lfog.gain.value=180;
-    gain.gain.value=.06/(i+1);
-    lfo.connect(lfog); lfog.connect(filter.frequency);
-    osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
-    if(window._audioReverb) gain.connect(window._audioReverb);
-    lfo.start(); osc.start();
-    audioNodes.push(osc,lfo);
-  });
-}
-function scheduleChordSwells(){
-  function doSwell(){
-    if(!audioOn||!audioCtx) return;
-    const freqs=AUDIO_FREQS[dominantMoodType]||AUDIO_FREQS.neutral;
-    freqs.slice(0,3).forEach((freq,i)=>{
-      setTimeout(()=>{
-        const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
-        osc.type=['sawtooth','sine','triangle'][i%3];
-        osc.frequency.value=freq*(i%2===0?1:2); osc.detune.value=(Math.random()-.5)*6;
-        gain.gain.setValueAtTime(0,audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(.04,audioCtx.currentTime+2);
-        gain.gain.setValueAtTime(.04,audioCtx.currentTime+6);
-        gain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+10);
-        osc.connect(gain); gain.connect(window._audioReverb||masterGain);
-        osc.start(); osc.stop(audioCtx.currentTime+11);
-      },i*700);
-    });
-    setTimeout(doSwell,13000+Math.random()*5000);
-  }
-  setTimeout(doSwell,4000);
-}
-function shiftAudioMood(moodType){
-  if(!audioOn||!audioCtx) return;
-  masterGain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.8);
-  setTimeout(()=>{ buildDrone(moodType); masterGain.gain.setValueAtTime(0,audioCtx.currentTime); masterGain.gain.linearRampToValueAtTime(.15,audioCtx.currentTime+1.2); },850);
-}
-function chimeSignal(){
-  if(!audioOn||!audioCtx) return;
-  try{
-    const osc=audioCtx.createOscillator(),env=audioCtx.createGain();
-    osc.frequency.value=880; osc.type='sine';
-    env.gain.setValueAtTime(.08,audioCtx.currentTime);
-    env.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.6);
-    osc.connect(env); env.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime+.6);
-  }catch(_){}
-}
-function playClickBoom(){
-  if(!audioCtx||!audioOn) return;
-  try{
-    // Sub bass
-    const sub=audioCtx.createOscillator(),subG=audioCtx.createGain();
-    sub.type='sine'; sub.frequency.setValueAtTime(80,audioCtx.currentTime);
-    sub.frequency.exponentialRampToValueAtTime(28,audioCtx.currentTime+.35);
-    subG.gain.setValueAtTime(.35,audioCtx.currentTime); subG.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.45);
-    sub.connect(subG); subG.connect(window._audioComp||audioCtx.destination);
-    sub.start(); sub.stop(audioCtx.currentTime+.5);
-    // Metallic partials
-    [1.0,2.756,5.404].forEach(ratio=>{
-      const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-      o.type='triangle'; o.frequency.value=200*ratio;
-      g.gain.setValueAtTime(.07,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.5);
-      o.connect(g); g.connect(window._audioReverb||audioCtx.destination);
-      o.start(); o.stop(audioCtx.currentTime+.6);
-    });
-    // Noise whoosh
-    const bSz=audioCtx.sampleRate*.25, nBuf=audioCtx.createBuffer(1,bSz,audioCtx.sampleRate);
-    const nd=nBuf.getChannelData(0); for(let i=0;i<bSz;i++) nd[i]=(Math.random()*2-1);
-    const ns=audioCtx.createBufferSource(); ns.buffer=nBuf;
-    const nf=audioCtx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=2000; nf.Q.value=.5;
-    const ng=audioCtx.createGain(); ng.gain.setValueAtTime(.12,audioCtx.currentTime); ng.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.25);
-    ns.connect(nf); nf.connect(ng); ng.connect(window._audioComp||audioCtx.destination);
-    ns.start(); ns.stop(audioCtx.currentTime+.3);
-  }catch(_){}
-}
-function stopAudio(){
-  audioNodes.forEach(n=>{ try{ n.stop(); }catch(_){} }); audioNodes=[];
-  if(masterGain) masterGain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.5);
-  setTimeout(()=>{ if(audioCtx){ audioCtx.close(); audioCtx=null; } },600);
-  audioOn=false;
-  const btn=document.getElementById('btn-audio');
-  if(btn){ btn.classList.remove('active'); document.getElementById('audio-icon-glyph').textContent='◎'; }
-}
-
-/* ══════════════════════════════════════════════════════════
-   GEO + SHARE + AURA CARD
-   ══════════════════════════════════════════════════════════ */
-window.detectLocation=async function(){
-  const btn=document.getElementById('btn-locate');
-  btn.classList.add('loading');
-  try{
-    const res=await fetch('https://ipapi.co/json/');
-    const data=await res.json();
-    if(data.city) document.getElementById('city-input').value=data.city;
-    if(data.country_name) document.getElementById('country-input').value=data.country_name;
-    userLat=parseFloat(data.latitude)||null; userLng=parseFloat(data.longitude)||null;
-    showToast(`📍 Located: ${data.city}, ${data.country_name}`);
-  }catch(err){ showToast('Could not detect location'); }
-  finally{ btn.classList.remove('loading'); }
-};
-async function silentGeoDetect(){
-  try{
-    const res=await fetch('https://ipapi.co/json/');
-    const data=await res.json();
-    const city=document.getElementById('city-input'), ctry=document.getElementById('country-input');
-    if(city&&!city.value&&data.city) city.value=data.city;
-    if(ctry&&!ctry.value&&data.country_name) ctry.value=data.country_name;
-    userLat=parseFloat(data.latitude)||null; userLng=parseFloat(data.longitude)||null;
-  }catch(_){}
-}
-function updateShareUrl(word){
-  const badge=document.getElementById('share-badge'), urlEl=document.getElementById('share-url-text');
-  if(!word||word.length<2){ badge.classList.add('hidden'); return; }
-  const url=`${location.origin}${location.pathname}?mood=${encodeURIComponent(word)}`;
-  urlEl.textContent=url.replace(/^https?:\/\//,'');
-  badge.classList.remove('hidden');
-}
-window.copyShareUrl=function(){
-  const word=document.getElementById('mood-input').value.trim()||currentMood.t;
-  const url=`${location.origin}${location.pathname}?mood=${encodeURIComponent(word)}`;
-  navigator.clipboard.writeText(url).then(()=>showToast('🔗 Share link copied!')).catch(()=>showToast('Copy failed'));
-};
-function handleUrlMood(){
-  const params=new URLSearchParams(location.search), m=params.get('mood');
-  if(!m) return;
-  const input=document.getElementById('mood-input');
-  input.value=m; window.onMoodInput(m);
-  showToast(`Mood loaded: "${m}" ✦`);
-}
-function prepareAuraCard(word,mood,city,country){
-  document.getElementById('aura-word').textContent=word.toUpperCase();
-  document.getElementById('aura-type').textContent=(mood.t||'neutral').toUpperCase();
-  const loc=[city,country].filter(s=>s&&s!=='Unknown').join(', ');
-  document.getElementById('aura-loc').textContent=loc||'Somewhere on Earth';
-  document.getElementById('aura-date').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  document.getElementById('aura-bg').style.background=`radial-gradient(ellipse at 30% 40%,${mood.c} 0%,#050b1e 65%)`;
-}
-async function captureAuraCard(){
-  const card=document.getElementById('aura-card');
-  card.style.top='-9999px'; card.style.left='0px';
-  try{
-    const canvas=await html2canvas(card,{backgroundColor:null,scale:2,useCORS:true,logging:false});
-    const a=document.createElement('a'); a.download='mood-aura.png'; a.href=canvas.toDataURL('image/png'); a.click();
-    showToast('🎴 Aura Card downloaded!');
-  }catch(err){ console.warn('[AURA]',err); }
-  finally{ card.style.top='-9999px'; card.style.left='-9999px'; }
-}
-window.captureAuraCardAndDownload=captureAuraCard;
-
-/* ══════════════════════════════════════════════════════════
-   LIVE FEED SIMULATION
-   ══════════════════════════════════════════════════════════ */
-const FEED_WORDS=[
-  ['speranza','joy'],['amore','love'],['paura','fear'],['bellezza','joy'],['silenzio','serenity'],
-  ['rabbia','anger'],['pace','serenity'],['eccitazione','joy'],['hope','joy'],['love','love'],
-  ['fear','fear'],['joy','joy'],['peace','serenity'],['rage','anger'],['beauty','joy'],
-  ['numb','neutral'],['fire','anger'],['amour','love'],['espoir','joy'],['tristesse','sadness'],
-  ['vida','joy'],['家族','love'],['平和','serenity'],['希望','joy'],['怒り','anger'],
-  ['Liebe','love'],['Hoffnung','joy'],['Angst','fear'],['Freude','joy'],['сила','anger'],
-  ['надежда','joy'],['тишина','serenity'],['радость','joy'],['حب','love'],['أمل','joy'],
-];
-function startLiveFeed(){
-  setInterval(()=>{
-    const [word,moodType]=FEED_WORDS[Math.floor(Math.random()*FEED_WORDS.length)];
-    const city=WORLD_CITIES[Math.floor(Math.random()*WORLD_CITIES.length)];
-    addTickerItem({word,mood_type:moodType,city:city.name,country:city.country||''});
-    if(audioOn) chimeSignal();
-  },4500);
-}
-
-/* ══════════════════════════════════════════════════════════
-   TOAST + UTILITY
-   ══════════════════════════════════════════════════════════ */
-let toastTimer=null;
-function showToast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>el.classList.remove('show'),3400);
-}
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-/* ══════════════════════════════════════════════════════════
-   BOOT
-   ══════════════════════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded',()=>{
-  initGlobe();
-  initParticleCanvas();
-
-  initDB().then(()=>{ clearTimeout(loaderTimer); hideLoader(); }).catch(()=>{});
-  silentGeoDetect();
-
-  // Seed demo ticker
-  const seeds=[
-    {word:'hopeful',   mood_type:'joy',     city:'Tokyo',      country:'Japan'},
-    {word:'nostalgic', mood_type:'sadness', city:'Paris',      country:'France'},
-    {word:'serene',    mood_type:'serenity',city:'Bali',       country:'Indonesia'},
-    {word:'electric',  mood_type:'joy',     city:'New York',   country:'USA'},
-    {word:'tender',    mood_type:'love',    city:'Rome',       country:'Italy'},
-    {word:'zen',       mood_type:'serenity',city:'Kyoto',      country:'Japan'},
-    {word:'speranza',  mood_type:'joy',     city:'Marsala',    country:'Italy'},
-  ];
-  seeds.reverse().forEach((s,i)=>setTimeout(()=>addTickerItem(s),i*280));
-
-  // Keyboard
-  document.getElementById('mood-input').addEventListener('keydown',e=>{ if(e.key==='Enter') window.submitMood(); });
-
-  handleUrlMood();
-  updateSignalCounter(0);
-  startLiveFeed();
-
-  // Initial giant display
-  updateGiantMoodDisplay('serenity');
-
-  // First interaction resume audio ctx
-  document.addEventListener('click',()=>{ if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume(); },{once:true});
-});
-
-})();
-</script>
 </body>
 </html>
