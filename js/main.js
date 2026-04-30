@@ -203,9 +203,10 @@
       MAIN._supabase = supabase.createClient(GMR.SUPABASE_URL, GMR.SUPABASE_KEY);
 
       /* Subscribe to realtime signals */
+      const tbl = (GMR.DB && GMR.DB.table) || 'mood_signals';
       MAIN._supabase
-        .channel('signals')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'signals' }, payload => {
+        .channel('gmr-signals')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: tbl }, payload => {
           MAIN._handleIncomingSignal(payload.new);
         })
         .subscribe();
@@ -219,17 +220,17 @@
 
   MAIN._pushToSupabase = async function (word, moodType, city) {
     if (!MAIN._supabase) return;
+    const tbl = (GMR.DB && GMR.DB.table) || 'mood_signals';
     try {
-      await MAIN._supabase.from('signals').insert({
+      const { error } = await MAIN._supabase.from(tbl).insert({
         word,
-        mood_type: moodType,
-        city:      city.name,
-        country:   city.country,
-        lat:       city.lat,
-        lon:       city.lon,
+        mood_type:  moodType,
+        city:       city.name || '',
+        country:    city.country || '',
         created_at: new Date().toISOString(),
       });
-    } catch (_) {}
+      if (error) console.warn('[GMR Supabase] Insert error:', error.message);
+    } catch (e) { console.warn('[GMR Supabase] Push failed:', e.message); }
   };
 
   MAIN._handleIncomingSignal = function (signal) {
