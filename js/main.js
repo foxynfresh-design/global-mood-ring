@@ -174,12 +174,16 @@
     GMR.audio && GMR.audio.chime();
     GMR.audio && GMR.audio.shiftMood(moodType);
 
-    /* UI updates */
+    /* UI updates — heavy rebuilds throttled to every 5s */
     GMR.ui && GMR.ui.updateGiantMood(moodType, moodObj.reflection || city.sentence);
-    GMR.ui && GMR.ui.updateStats();
-    GMR.ui && GMR.ui.updateDistribution(GMR.state.moodCounts);
     GMR.ui && GMR.ui.addTicker(word, city.name, moodType);
     GMR.ui && GMR.ui.pulseInput(moodType);
+    const _now = Date.now();
+    if (_now - (MAIN._lastUIRefresh || 0) > 5000) {
+      MAIN._lastUIRefresh = _now;
+      GMR.ui && GMR.ui.updateStats();
+      GMR.ui && GMR.ui.updateDistribution(GMR.state.moodCounts);
+    }
   };
 
   /* User's real location from IP — fetched once on boot */
@@ -310,15 +314,38 @@
     } catch (e) { console.warn('[GMR] Push failed:', e.message); }
   };
 
+  MAIN._lastIncoming = 0;
+  MAIN._incomingQueue = [];
+
   MAIN._handleIncomingSignal = function (signal) {
     if (!signal || !signal.mood_type) return;
-    const city = MAIN._cityForSignal(signal);
+    MAIN._incomingQueue.push(signal);
+    MAIN._drainIncoming();
+  };
+
+  MAIN._drainIncoming = function () {
+    if (!MAIN._incomingQueue.length) return;
+    const now = Date.now();
+    if (now - MAIN._lastIncoming < 1500) {
+      /* Too soon — wait for the gap then drain */
+      clearTimeout(MAIN._drainTimer);
+      MAIN._drainTimer = setTimeout(MAIN._drainIncoming,
+        1500 - (now - MAIN._lastIncoming));
+      return;
+    }
+    MAIN._lastIncoming = now;
+    const signal = MAIN._incomingQueue.shift();
+    const city   = MAIN._cityForSignal(signal);
     const moodObj = {
       t: signal.mood_type,
       e: mEmoji(signal.mood_type),
       c: mColor(signal.mood_type),
     };
     MAIN._applySignal(signal.word || '…', signal.mood_type, city, moodObj);
+    /* Schedule next from queue */
+    if (MAIN._incomingQueue.length) {
+      MAIN._drainTimer = setTimeout(MAIN._drainIncoming, 1500);
+    }
   };
 
   /* ══════════════════════════════════════════════════════

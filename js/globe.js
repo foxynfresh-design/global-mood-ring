@@ -208,6 +208,8 @@
     if (G.arcs.length > 12) {
       const old = G.arcs.shift();
       G.arcGroup.remove(old.line);
+      old.line.geometry.dispose();
+      old.line.material.dispose();
     }
   };
 
@@ -244,14 +246,26 @@
       d.life -= 0.008;
       d.mesh.material.opacity = Math.max(0, d.life);
       d.mesh.scale.setScalar(1 + (1 - d.life) * 0.8);
-      if (d.life <= 0) { G.scene.remove(d.mesh); return false; }
+      if (d.life <= 0) {
+        G.scene.remove(d.mesh);
+        d.mesh.geometry.dispose();
+        d.mesh.material.dispose();
+        return false;
+      }
       return true;
     });
 
-    // Fade arcs
-    G.arcs.forEach(a => {
+    // Fade and dispose dead arcs
+    G.arcs = G.arcs.filter(a => {
       a.life -= 0.003;
       a.line.material.opacity = Math.max(0, a.life * 0.6);
+      if (a.life <= 0) {
+        G.arcGroup.remove(a.line);
+        a.line.geometry.dispose();
+        a.line.material.dispose();
+        return false;
+      }
+      return true;
     });
 
     G.renderer.render(G.scene, G.camera);
