@@ -13,6 +13,20 @@
   const MAIN = {};
   GMR.main = MAIN;
 
+  /* ── Fallback color/emoji maps (mirror ui.js) ── */
+  const _MC = {
+    joy:'#f7c948',sadness:'#5b8cff',anger:'#ff4d4d',
+    fear:'#b84dff',serenity:'#4af0c8',love:'#ff6eb4',
+    surprise:'#ff9f1c',neutral:'#a0aec0',
+  };
+  const _ME = {
+    joy:'😊',sadness:'😢',anger:'😠',
+    fear:'😨',serenity:'🌿',love:'❤️',
+    surprise:'😲',neutral:'😶',
+  };
+  const mColor = t => (GMR.TYPE_COLOR && mColor(t)) || _MC[t] || '#4af0c8';
+  const mEmoji = t => (GMR.TYPE_EMOJI && mEmoji(t)) || _ME[t] || '◉';
+
   /* ══════════════════════════════════════════════════════
      1. MOOD CLASSIFICATION (local fallback)
      ══════════════════════════════════════════════════════ */
@@ -75,8 +89,8 @@
     const localType = MAIN.classifyMood(word);
     const localMoodObj = {
       t: localType,
-      e: GMR.TYPE_EMOJI[localType] || '◉',
-      c: GMR.TYPE_COLOR[localType]  || '#4af0c8',
+      e: mEmoji(localType) || '◉',
+      c: mColor(localType)  || '#4af0c8',
     };
 
     /* Immediately update globe/map with optimistic signal */
@@ -128,7 +142,7 @@
   };
 
   MAIN._applySignal = function (word, moodType, city, moodObj) {
-    const col = moodObj.c || GMR.TYPE_COLOR[moodType] || '#4af0c8';
+    const col = moodObj.c || mColor(moodType) || '#4af0c8';
     const hex = parseInt(col.slice(1), 16);
 
     /* Globe dot */
@@ -220,8 +234,8 @@
     const city = GMR.WORLD_CITIES.find(c => c.name === signal.city) || MAIN._pickCity(signal.mood_type);
     const moodObj = {
       t: signal.mood_type,
-      e: GMR.TYPE_EMOJI[signal.mood_type] || '◉',
-      c: GMR.TYPE_COLOR[signal.mood_type] || '#4af0c8',
+      e: mEmoji(signal.mood_type) || '◉',
+      c: mColor(signal.mood_type) || '#4af0c8',
     };
     MAIN._applySignal(signal.word || '…', signal.mood_type, city, moodObj);
   };
@@ -233,15 +247,15 @@
 
   MAIN._startSimulation = function () {
     const tick = () => {
-      const types = Object.keys(GMR.SIM_WORDS || GMR.TYPE_COLOR);
+      const types = Object.keys(GMR.SIM_WORDS || _MC);
       const type  = types[Math.floor(Math.random() * types.length)];
       const words = (GMR.SIM_WORDS || {})[type] || ['signal'];
       const word  = words[Math.floor(Math.random() * words.length)];
       const city  = MAIN._pickCity(type);
       const moodObj = {
         t: type,
-        e: GMR.TYPE_EMOJI[type] || '◉',
-        c: GMR.TYPE_COLOR[type]  || '#4af0c8',
+        e: mEmoji(type) || '◉',
+        c: mColor(type)  || '#4af0c8',
       };
 
       MAIN._applySignal(word, type, city, moodObj);

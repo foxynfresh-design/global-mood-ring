@@ -16,6 +16,20 @@
   const UI = {};
   GMR.ui = UI;
 
+  /* ── Safe accessors — survive missing GMR.TYPE_COLOR / TYPE_EMOJI ── */
+  const _COLORS = {
+    joy:      '#f7c948', sadness: '#5b8cff', anger:   '#ff4d4d',
+    fear:     '#b84dff', serenity:'#4af0c8', love:    '#ff6eb4',
+    surprise: '#ff9f1c', neutral: '#a0aec0',
+  };
+  const _EMOJIS = {
+    joy:      '😊', sadness: '😢', anger:   '😠',
+    fear:     '😨', serenity:'🌿', love:    '❤️',
+    surprise: '😲', neutral: '😶',
+  };
+  const typeColor = t => (GMR.TYPE_COLOR && GMR.TYPE_COLOR[t]) || _COLORS[t] || '#4af0c8';
+  const typeEmoji = t => (GMR.TYPE_EMOJI && GMR.TYPE_EMOJI[t]) || _EMOJIS[t] || '◉';
+
   /* ══════════════════════════════════════════════════════
      TOAST
      ══════════════════════════════════════════════════════ */
@@ -34,8 +48,8 @@
      GIANT MOOD DISPLAY
      ══════════════════════════════════════════════════════ */
   UI.updateGiantMood = function (moodType, sentence) {
-    const col     = GMR.TYPE_COLOR[moodType] || '#4af0c8';
-    const emoji   = GMR.TYPE_EMOJI[moodType] || '◉';
+    const col     = typeColor(moodType) || '#4af0c8';
+    const emoji   = typeEmoji(moodType) || '◉';
     const typeEl  = document.getElementById('giant-type');
     const sentEl  = document.getElementById('giant-sentence');
     const dotEl   = document.getElementById('mood-glow-dot');
@@ -78,8 +92,8 @@
 
     el.innerHTML = sorted.map(([type, n]) => {
       const pct = Math.round((n / total) * 100);
-      const col = GMR.TYPE_COLOR[type] || '#4af0c8';
-      const emoji = GMR.TYPE_EMOJI[type] || '';
+      const col = typeColor(type) || '#4af0c8';
+      const emoji = typeEmoji(type) || '';
       return `
         <div class="dist-row">
           <div class="dist-label">
@@ -106,7 +120,7 @@
     }
     if (domEl) {
       const dom = state.dominantType || 'serenity';
-      const col = GMR.TYPE_COLOR[dom] || '#4af0c8';
+      const col = typeColor(dom) || '#4af0c8';
       domEl.textContent  = dom.toUpperCase();
       domEl.style.color  = col;
     }
@@ -135,8 +149,8 @@
 
     UI._tickerRunning = true;
     const item = UI._tickerQueue.shift();
-    const col  = GMR.TYPE_COLOR[item.moodType] || '#4af0c8';
-    const emoji = GMR.TYPE_EMOJI[item.moodType] || '◉';
+    const col  = typeColor(item.moodType) || '#4af0c8';
+    const emoji = typeEmoji(item.moodType) || '◉';
 
     const li = document.createElement('li');
     li.className = 'ticker-item';
@@ -174,7 +188,7 @@
     const overlay = document.getElementById('submit-overlay');
     if (!overlay) return;
 
-    const col   = result.color || GMR.TYPE_COLOR[result.type] || '#4af0c8';
+    const col   = result.color || typeColor(result.type) || '#4af0c8';
     const bg    = document.getElementById('so-bg');
     const emoji = document.getElementById('so-emoji');
     const wEl   = document.getElementById('so-word');
@@ -239,7 +253,7 @@
   UI.pulseInput = function (moodType) {
     const wrap = document.getElementById('input-wrap');
     if (!wrap) return;
-    const col = GMR.TYPE_COLOR[moodType] || '#4af0c8';
+    const col = typeColor(moodType) || '#4af0c8';
     wrap.style.boxShadow = `0 0 0 2px ${col}88, 0 0 24px ${col}44`;
     setTimeout(() => { wrap.style.boxShadow = ''; }, 900);
   };
@@ -261,8 +275,8 @@
     }
 
     if (matchedType) {
-      const col = GMR.TYPE_COLOR[matchedType] || '#4af0c8';
-      const emoji = GMR.TYPE_EMOJI[matchedType] || '';
+      const col = typeColor(matchedType) || '#4af0c8';
+      const emoji = typeEmoji(matchedType) || '';
       hint.textContent = `${emoji} ${matchedType}`;
       hint.style.color  = col;
       hint.style.opacity = '0.9';
