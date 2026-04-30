@@ -24,8 +24,9 @@
     fear:'😨',serenity:'🌿',love:'❤️',
     surprise:'😲',neutral:'😶',
   };
-  const mColor = t => (GMR.TYPE_COLOR && mColor(t)) || _MC[t] || '#4af0c8';
-  const mEmoji = t => (GMR.TYPE_EMOJI && mEmoji(t)) || _ME[t] || '◉';
+  /* Capture once at boot so the helpers never self-recurse */
+  const mColor = t => { const m = GMR.TYPE_COLOR || {}; return m[t] || _MC[t] || '#4af0c8'; };
+  const mEmoji = t => { const m = GMR.TYPE_EMOJI || {}; return m[t] || _ME[t] || '◉'; };
 
   /* ══════════════════════════════════════════════════════
      1. MOOD CLASSIFICATION (local fallback)
@@ -35,10 +36,11 @@
     if (!lower) return 'neutral';
 
     /* Direct lookup */
-    if (GMR.MOOD_MAP[lower]) return GMR.MOOD_MAP[lower];
+    const _mm = GMR.MOOD_MAP || {};
+    if (_mm[lower]) return _mm[lower];
 
     /* Prefix scan */
-    for (const [key, type] of Object.entries(GMR.MOOD_MAP)) {
+    for (const [key, type] of Object.entries(_mm)) {
       if (lower.includes(key) || key.includes(lower.slice(0, 4))) return type;
     }
 
