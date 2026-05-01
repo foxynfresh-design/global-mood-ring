@@ -1,381 +1,1849 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Global Mood Ring — The Emotional Pulse of Earth</title>
-  <meta name="description" content="Real-time emotional signal map. Send a mood word. Watch it land on the globe." />
-  <meta property="og:title" content="Global Mood Ring" />
-  <meta property="og:description" content="The planet is feeling something right now." />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANIMA MUNDI — Global Mood Ring</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Rajdhani:wght@300;400;500&display=swap');
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Tenor+Sans&display=swap" rel="stylesheet" />
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="css/styles.css?v=7" />
+:root{
+  --mc:#5DDCB8;
+  --mg:rgba(93,220,184,0.4);
+  --gold:#C9A96E;
+  --deep:#020408;
+}
+
+html,body{
+  width:100%;height:100%;
+  overflow:hidden;
+  background:#000;
+  color:#dde8f5;
+  font-family:'Rajdhani',sans-serif;
+  cursor:none;
+}
+
+/* CUSTOM CURSOR */
+#cursor{
+  position:fixed;z-index:9999;pointer-events:none;
+  width:12px;height:12px;
+  border:1px solid var(--mc);
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  transition:width .2s,height .2s,border-color .2s,background .2s;
+  mix-blend-mode:screen;
+}
+#cursor-dot{
+  position:fixed;z-index:9999;pointer-events:none;
+  width:3px;height:3px;
+  background:var(--mc);
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+}
+#cursor.hovering{width:28px;height:28px;background:rgba(93,220,184,0.08);}
+
+/* WEBGL CANVAS */
+#gl{
+  position:fixed;inset:0;
+  display:block;
+  width:100%;height:100%;
+}
+
+/* LOADER */
+#loader{
+  position:fixed;inset:0;z-index:500;
+  background:#000;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:24px;
+  transition:opacity 1.5s ease;
+}
+#loader.gone{opacity:0;pointer-events:none;}
+#ld-glyph{
+  font-family:'Cinzel',serif;
+  font-size:11px;letter-spacing:8px;
+  color:rgba(201,169,110,0.6);
+  text-transform:uppercase;
+  animation:ldpulse 2s ease-in-out infinite;
+}
+@keyframes ldpulse{0%,100%{opacity:.4}50%{opacity:1}}
+#ld-title{
+  font-family:'Cinzel',serif;
+  font-size:clamp(28px,4vw,52px);
+  letter-spacing:12px;
+  color:#fff;
+  font-weight:300;
+  text-align:center;
+}
+#ld-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:15px;
+  letter-spacing:3px;
+  color:rgba(201,169,110,0.7);
+}
+#ld-bar-wrap{
+  width:200px;height:1px;
+  background:rgba(255,255,255,0.07);
+  position:relative;overflow:hidden;
+}
+#ld-bar{
+  height:100%;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  width:0%;
+  transition:width .4s ease;
+}
+#ld-pct{
+  font-size:10px;letter-spacing:4px;
+  color:rgba(255,255,255,0.25);
+  margin-top:8px;
+}
+
+/* UI LAYER */
+#ui{
+  position:fixed;inset:0;z-index:50;
+  pointer-events:none;
+}
+#ui *{pointer-events:auto;}
+
+/* TOP LEFT — LOGO */
+#logo{
+  position:absolute;top:36px;left:40px;
+}
+#logo-eyebrow{
+  font-size:9px;letter-spacing:7px;
+  text-transform:uppercase;
+  color:var(--gold);
+  opacity:.7;
+  margin-bottom:6px;
+}
+#logo-title{
+  font-family:'Cinzel',serif;
+  font-size:clamp(22px,2.5vw,36px);
+  letter-spacing:6px;
+  font-weight:300;
+  color:#fff;
+  line-height:1;
+}
+#logo-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:12px;
+  letter-spacing:3px;
+  color:rgba(201,169,110,0.55);
+  margin-top:8px;
+}
+
+/* TOP RIGHT — STATUS */
+#status{
+  position:absolute;top:36px;right:40px;
+  display:flex;flex-direction:column;align-items:flex-end;gap:10px;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(2,4,8,0.6);
+  backdrop-filter:blur(20px);
+  font-size:9px;letter-spacing:4px;text-transform:uppercase;
+  color:rgba(180,195,220,0.5);
+}
+.live-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--mc);
+  box-shadow:0 0 8px var(--mc);
+  animation:blink 2.5s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* SIGNAL COUNT */
+#sig-count{
+  font-family:'Cinzel',serif;
+  font-size:28px;letter-spacing:2px;
+  color:#fff;
+  text-align:right;
+  line-height:1;
+}
+#sig-label{
+  font-size:8px;letter-spacing:5px;text-transform:uppercase;
+  color:rgba(201,169,110,0.5);
+  text-align:right;
+}
+
+/* LEFT PANEL — MOOD */
+#mood-panel{
+  position:absolute;
+  left:40px;
+  top:50%;
+  transform:translateY(-50%);
+  width:180px;
+}
+#mp-dominant-label{
+  font-size:8px;letter-spacing:6px;text-transform:uppercase;
+  color:rgba(201,169,110,0.5);
+  margin-bottom:12px;
+}
+#mp-dominant{
+  font-family:'Cinzel',serif;
+  font-size:clamp(36px,4vw,54px);
+  letter-spacing:3px;
+  font-weight:300;
+  color:var(--mc);
+  line-height:.9;
+  text-shadow:0 0 60px var(--mg);
+  transition:color 2s,text-shadow 2s;
+  margin-bottom:16px;
+}
+#mp-bars{margin-bottom:20px;}
+.mb-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.mb-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;width:60px;color:rgba(180,195,220,0.5);}
+.mb-track{flex:1;height:1px;background:rgba(255,255,255,0.05);}
+.mb-fill{height:100%;width:0%;transition:width 2s cubic-bezier(.22,1,.36,1),background 2s;}
+.mb-pct{font-size:8px;color:rgba(180,195,220,0.3);width:24px;text-align:right;}
+
+/* BOTTOM CENTER — INPUT */
+#input-zone{
+  position:absolute;
+  bottom:40px;left:50%;
+  transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;
+  gap:14px;
+}
+#input-prompt{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:14px;letter-spacing:3px;
+  color:rgba(201,169,110,0.6);
+  text-align:center;
+}
+#input-row{display:flex;align-items:stretch;}
+#mood-in{
+  background:rgba(2,4,8,0.8);
+  border:1px solid rgba(255,255,255,0.1);
+  border-right:none;
+  font-family:'Cinzel',serif;
+  font-size:20px;letter-spacing:4px;
+  text-transform:uppercase;
+  color:#fff;
+  outline:none;
+  padding:12px 28px;
+  width:clamp(200px,22vw,320px);
+  text-align:center;
+  transition:border-color .3s;
+  backdrop-filter:blur(20px);
+}
+#mood-in::placeholder{color:rgba(255,255,255,0.1);font-size:14px;letter-spacing:6px;}
+#mood-in:focus{border-color:rgba(201,169,110,0.5);}
+#send-btn{
+  font-family:'Cinzel',serif;
+  font-size:11px;letter-spacing:4px;
+  background:transparent;
+  border:1px solid rgba(201,169,110,0.4);
+  color:var(--gold);
+  padding:12px 24px;
+  cursor:pointer;
+  transition:all .25s;
+  backdrop-filter:blur(20px);
+}
+#send-btn:hover{background:rgba(201,169,110,0.1);border-color:var(--gold);}
+
+/* RIGHT PANEL — LIVE FEED */
+#feed-panel{
+  position:absolute;
+  right:40px;top:50%;
+  transform:translateY(-50%);
+  width:190px;
+}
+#fp-label{
+  font-size:8px;letter-spacing:6px;text-transform:uppercase;
+  color:rgba(201,169,110,0.5);
+  margin-bottom:14px;
+  text-align:right;
+}
+#fp-list{display:flex;flex-direction:column;gap:5px;}
+.fi{
+  border-right:1px solid var(--mc);
+  padding:8px 14px 8px 0;
+  text-align:right;
+  animation:fiIn .5s cubic-bezier(.22,1,.36,1) forwards;
+  opacity:0;
+  background:rgba(2,4,8,0.5);
+  backdrop-filter:blur(10px);
+}
+@keyframes fiIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.fi-word{font-family:'Cinzel',serif;font-size:13px;letter-spacing:2px;color:#fff;}
+.fi-loc{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(180,195,220,0.35);margin-top:2px;}
+
+/* BOTTOM LEFT — POETIC */
+#poetic-zone{
+  position:absolute;bottom:40px;left:40px;
+  max-width:360px;
+}
+#pz-globe-label{
+  font-size:8px;letter-spacing:5px;text-transform:uppercase;
+  color:rgba(201,169,110,0.4);margin-bottom:10px;
+}
+#pz-text{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:clamp(13px,1.2vw,15px);
+  color:rgba(180,200,235,0.55);
+  line-height:1.9;
+}
+
+/* BOTTOM RIGHT — AUDIO */
+#audio-btn{
+  position:absolute;bottom:40px;right:40px;
+  background:none;
+  border:1px solid rgba(255,255,255,0.07);
+  color:rgba(180,195,220,0.35);
+  padding:10px 18px;
+  font-family:'Rajdhani',sans-serif;
+  font-size:9px;letter-spacing:5px;text-transform:uppercase;
+  cursor:pointer;
+  transition:all .3s;
+  display:flex;align-items:center;gap:10px;
+  backdrop-filter:blur(20px);
+}
+#audio-btn:hover,#audio-btn.on{border-color:rgba(201,169,110,0.3);color:rgba(201,169,110,0.7);}
+.adot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(180,195,220,0.2);
+  transition:all .3s;
+}
+#audio-btn.on .adot{background:var(--gold);box-shadow:0 0 10px var(--gold);}
+
+/* TOOLTIP */
+#tip{
+  position:fixed;z-index:60;pointer-events:none;
+  background:rgba(2,4,8,0.92);
+  border:1px solid rgba(201,169,110,0.25);
+  padding:16px 20px;
+  max-width:240px;
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity .2s,transform .2s;
+  backdrop-filter:blur(24px);
+}
+#tip.on{opacity:1;transform:translateY(0);}
+#tip-name{font-family:'Cinzel',serif;font-size:16px;letter-spacing:2px;color:var(--mc);margin-bottom:4px;}
+#tip-mood{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:8px;}
+#tip-pulse{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;color:rgba(180,200,235,0.55);line-height:1.7;}
+
+/* OVERLAY */
+#overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.92);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .6s;
+  backdrop-filter:blur(30px);
+}
+#overlay.on{opacity:1;pointer-events:auto;}
+#ov-card{
+  border:1px solid rgba(201,169,110,0.2);
+  background:rgba(2,4,8,0.8);
+  padding:60px 80px;
+  text-align:center;
+  max-width:540px;
+  position:relative;
+}
+#ov-card::before{
+  content:'';position:absolute;inset:-1px;
+  background:linear-gradient(135deg,rgba(201,169,110,0.15),transparent 40%,transparent 60%,rgba(93,220,184,0.1));
+  pointer-events:none;
+}
+#ov-eyebrow{font-size:8px;letter-spacing:7px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:20px;}
+#ov-mood{
+  font-family:'Cinzel',serif;
+  font-size:clamp(52px,8vw,96px);
+  letter-spacing:4px;font-weight:300;
+  color:var(--mc);line-height:.85;
+  text-shadow:0 0 100px var(--mg);
+  transition:color 1s,text-shadow 1s;
+  margin-bottom:28px;
+}
+#ov-ref{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:clamp(14px,1.5vw,17px);
+  color:rgba(180,200,235,0.75);
+  line-height:1.95;
+  margin-bottom:8px;
+}
+#ov-wait{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:rgba(201,169,110,0.4);margin-top:14px;}
+#ov-actions{display:flex;gap:12px;margin-top:36px;justify-content:center;}
+.ov-btn{
+  background:none;border:1px solid rgba(255,255,255,0.1);
+  color:rgba(180,195,220,0.5);
+  padding:12px 28px;cursor:pointer;
+  font-family:'Rajdhani',sans-serif;
+  font-size:9px;letter-spacing:5px;text-transform:uppercase;
+  transition:all .25s;
+}
+.ov-btn:hover{border-color:rgba(201,169,110,0.4);color:rgba(201,169,110,0.8);}
+.ov-btn.main{background:rgba(201,169,110,0.1);border-color:rgba(201,169,110,0.4);color:var(--gold);}
+.ov-btn.main:hover{background:rgba(201,169,110,0.2);}
+
+/* DECORATIVE LINES */
+.h-line{
+  position:absolute;
+  height:1px;background:linear-gradient(90deg,transparent,rgba(201,169,110,0.2),transparent);
+  pointer-events:none;
+}
+.v-line{
+  position:absolute;
+  width:1px;background:linear-gradient(180deg,transparent,rgba(201,169,110,0.2),transparent);
+  pointer-events:none;
+}
+
+/* FADE IN */
+.fadein{opacity:0;animation:fdin 1.2s ease forwards;}
+@keyframes fdin{to{opacity:1}}
+
+/* AUDIO VISUALIZER BARS */
+#viz{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  display:flex;align-items:flex-end;gap:2px;
+  height:32px;width:120px;
+  opacity:0;transition:opacity .5s;
+  pointer-events:none;
+}
+#viz.on{opacity:0.35;}
+.vb{
+  flex:1;background:var(--gold);
+  border-radius:1px 1px 0 0;
+  min-height:2px;
+  transition:height .1s;
+}
+
+/* CROSSHAIR on globe hover */
+#crosshair{
+  position:fixed;z-index:55;pointer-events:none;
+  opacity:0;transition:opacity .2s;
+  width:40px;height:40px;
+  transform:translate(-50%,-50%);
+}
+#crosshair.on{opacity:1;}
+#crosshair::before,#crosshair::after{
+  content:'';position:absolute;background:rgba(201,169,110,0.4);
+}
+#crosshair::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-50%);}
+#crosshair::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-50%);}
+</style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════
-     LOADER
-     ══════════════════════════════════════════════════════ -->
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
+
+<!-- LOADER -->
 <div id="loader">
-  <div class="loader-logo">GLOBAL MOOD RING</div>
-  <div class="loader-sub">Tuning into Earth's frequency</div>
-  <div class="loader-bar">
-    <div id="loader-bar-fill"></div>
+  <div id="ld-glyph">Anima Mundi</div>
+  <div id="ld-title">GLOBAL MOOD RING</div>
+  <div id="ld-sub">Calibrating Earth's Emotional Frequency</div>
+  <div id="ld-bar-wrap"><div id="ld-bar"></div></div>
+  <div id="ld-pct">0%</div>
+</div>
+
+<!-- THREE.JS CANVAS -->
+<canvas id="gl"></canvas>
+
+<!-- TOOLTIP -->
+<div id="tip">
+  <div id="tip-name"></div>
+  <div id="tip-mood"></div>
+  <div id="tip-pulse"></div>
+</div>
+
+<!-- CROSSHAIR -->
+<div id="crosshair"></div>
+
+<!-- UI -->
+<div id="ui">
+  <!-- decorative lines -->
+  <div class="h-line" style="top:50%;left:0;right:0;"></div>
+  <div class="v-line" style="left:50%;top:0;bottom:0;"></div>
+
+  <!-- LOGO -->
+  <div id="logo" class="fadein" style="animation-delay:.5s">
+    <div id="logo-eyebrow">Soul of the World</div>
+    <div id="logo-title">ANIMA MUNDI</div>
+    <div id="logo-sub">The Emotional Pulse of Earth</div>
+  </div>
+
+  <!-- STATUS -->
+  <div id="status" class="fadein" style="animation-delay:.7s">
+    <div class="chip"><div class="live-dot"></div>Live Signal Active</div>
+    <div id="sig-count">0</div>
+    <div id="sig-label">Moods Received</div>
+  </div>
+
+  <!-- MOOD PANEL -->
+  <div id="mood-panel" class="fadein" style="animation-delay:.9s">
+    <div id="mp-dominant-label">Dominant Frequency</div>
+    <div id="mp-dominant">CALM</div>
+    <div id="mp-bars"></div>
+  </div>
+
+  <!-- FEED PANEL -->
+  <div id="feed-panel" class="fadein" style="animation-delay:1.1s">
+    <div id="fp-label">Live Signals</div>
+    <div id="fp-list"></div>
+  </div>
+
+  <!-- POETIC -->
+  <div id="poetic-zone" class="fadein" style="animation-delay:1.3s">
+    <div id="pz-globe-label">Earth's Reflection</div>
+    <div id="pz-text">The world holds its breath between heartbeats,<br>silence gilded with the weight of what comes next.</div>
+  </div>
+
+  <!-- INPUT -->
+  <div id="input-zone" class="fadein" style="animation-delay:1.5s">
+    <div id="input-prompt">How does the world feel through you?</div>
+    <div id="input-row">
+      <input id="mood-in" type="text" placeholder="ONE WORD" maxlength="28" autocomplete="off" spellcheck="false">
+      <button id="send-btn" onclick="submitMood()">TRANSMIT</button>
+    </div>
+    <div id="viz"><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div></div>
+  </div>
+
+  <!-- AUDIO -->
+  <button id="audio-btn" onclick="toggleAudio()">
+    <div class="adot"></div>
+    <span>Interstellar Score</span>
+  </button>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay">
+  <div id="ov-card">
+    <div id="ov-eyebrow">Your Emotional Signature</div>
+    <div id="ov-mood">—</div>
+    <div id="ov-ref"></div>
+    <div id="ov-wait">Reading your signal…</div>
+  </div>
+  <div id="ov-actions">
+    <button class="ov-btn main" onclick="closeOverlay()">Return to Earth</button>
+    <button class="ov-btn" onclick="closeOverlay()">Close · Esc</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     APP SHELL
-     ══════════════════════════════════════════════════════ -->
-<div id="app">
-
-  <!-- ── TOP NAV ── -->
-  <nav id="top-nav">
-    <div id="logo">◎ GMR</div>
-
-    <button id="btn-globe" class="nav-btn active" title="Globe view">
-      <span>Globe</span>
-    </button>
-    <button id="btn-map" class="nav-btn" title="Map view">
-      <span>Map</span>
-    </button>
-    <button id="btn-audio" class="nav-btn" onclick="toggleAudio()" title="Toggle audio">
-      <span id="audio-icon-glyph">◎</span> Audio
-    </button>
-
-    <div id="nav-spacer"></div>
-
-    <!-- Stats bar -->
-    <div id="stats-bar">
-      <div class="stat-item">
-        <span class="stat-label">SIGNALS</span>
-        <span id="stat-total" class="stat-value">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">DOMINANT</span>
-        <span id="stat-dominant" class="stat-value">—</span>
-      </div>
-      <div id="weather-chip">
-        <span class="weather-icon">🌤</span>
-        <span class="weather-label">CLEAR</span>
-      </div>
-    </div>
-  </nav>
-
-  <!-- ── LEFT PANEL ── -->
-  <aside id="left-panel">
-
-    <!-- Journalist -->
-    <div class="glass-panel" id="journalist-panel">
-      <div class="panel-title">
-        <span class="panel-title-dot"></span>
-        LIVE CORRESPONDENT
-      </div>
-      <div id="journalist-text">Initializing signal…</div>
-      <div id="journalist-ts">STANDBY</div>
-    </div>
-
-    <!-- Mood Distribution -->
-    <div class="glass-panel">
-      <div class="panel-title">EARTH'S FREQUENCY</div>
-      <div id="distribution-bars"></div>
-    </div>
-
-    <!-- Forecast -->
-    <div class="glass-panel">
-      <div class="panel-title">EMOTIONAL FORECAST</div>
-      <div id="forecast-content">
-        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;color:rgba(255,255,255,0.3);line-height:1.6">
-          Tomorrow's mood hasn't been written yet.
-        </div>
-      </div>
-      <button id="forecast-btn">Calculate forecast →</button>
-    </div>
-
-  </aside>
-
-  <!-- ── VIEW AREA ── -->
-  <main id="view-area">
-
-    <!-- Globe -->
-    <div id="globe-wrap" class="active">
-      <canvas id="globe-canvas"></canvas>
-    </div>
-
-    <!-- Map -->
-    <div id="map-wrap" class="hidden">
-      <div id="map-container-inner">
-        <svg id="map-svg" xmlns="http://www.w3.org/2000/svg"></svg>
-        <canvas id="ripple-canvas"></canvas>
-      </div>
-
-      <!-- Map Controls -->
-      <div id="map-controls">
-        <button class="map-ctrl-btn" onclick="zoomIn()" title="Zoom in">+</button>
-        <button class="map-ctrl-btn" onclick="zoomOut()" title="Zoom out">−</button>
-        <button class="map-ctrl-btn" onclick="resetMapView()" title="Reset view">⊙</button>
-      </div>
-
-      <!-- Breadcrumb -->
-      <div id="breadcrumb"></div>
-    </div>
-
-    <!-- Giant Mood Display (center overlay) -->
-    <div id="giant-mood-display">
-      <span id="giant-mood">◉</span>
-      <span id="giant-type">
-        <span id="mood-glow-dot"></span>SERENITY
-      </span>
-      <span id="giant-sentence">Waiting for the first signal…</span>
-    </div>
-
-  </main>
-
-  <!-- ── RIGHT PANEL ── -->
-  <aside id="right-panel">
-
-    <!-- Signal Feed / Ticker -->
-    <div class="glass-panel">
-      <div class="panel-title">SIGNAL FEED</div>
-      <ul id="ticker-list"></ul>
-    </div>
-
-    <!-- Streak Widget -->
-    <div class="glass-panel">
-      <div id="streak-widget"></div>
-      <button
-        data-action="wrapped"
-        style="margin-top:10px;width:100%;padding:7px;border:1px solid rgba(74,240,200,0.18);border-radius:8px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;transition:all .25s ease"
-        onmouseover="this.style.background='rgba(74,240,200,0.07)'"
-        onmouseout="this.style.background='none'"
-      >
-        Mood Wrapped →
-      </button>
-    </div>
-
-    <!-- 24h Waveform -->
-    <div class="glass-panel">
-      <div class="panel-title">24H SIGNAL WAVE</div>
-      <canvas id="waveform-canvas"></canvas>
-    </div>
-
-    <!-- Print / Aura -->
-    <div class="glass-panel">
-      <div class="panel-title">YOUR AURA</div>
-      <div style="display:flex;flex-direction:column;gap:7px">
-        <button
-          onclick="captureAuraCardAndDownload()"
-          style="width:100%;padding:7px;border:1px solid rgba(74,240,200,0.18);border-radius:8px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;transition:all .25s ease"
-          onmouseover="this.style.background='rgba(74,240,200,0.07)'"
-          onmouseout="this.style.background='none'"
-        >
-          🎴 Download Aura Card
-        </button>
-        <button
-          onclick="showPrintShop()"
-          style="width:100%;padding:7px;border:1px solid rgba(255,255,255,0.07);border-radius:8px;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;color:rgba(255,255,255,0.35);text-transform:uppercase;transition:all .25s ease"
-          onmouseover="this.style.background='rgba(255,255,255,0.04)'"
-          onmouseout="this.style.background='none'"
-        >
-          🖼 Print Shop
-        </button>
-      </div>
-    </div>
-
-  </aside>
-
-  <!-- ── INPUT AREA ── -->
-  <footer id="input-area">
-    <form id="input-bar" autocomplete="off">
-      <div id="input-wrap">
-        <input
-          id="mood-input"
-          type="text"
-          placeholder="how do you feel right now…"
-          maxlength="40"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <span id="signal-hint"></span>
-      </div>
-      <button id="submit-btn" type="submit">SEND</button>
-    </form>
-
-    <!-- Share badge -->
-    <div id="share-badge" class="hidden" onclick="copyShareUrl()">
-      <span style="color:var(--accent);font-size:11px">🔗</span>
-      <span id="share-url-text"></span>
-    </div>
-  </footer>
-
-</div><!-- /#app -->
-
-<!-- ══════════════════════════════════════════════════════
-     SUBMIT OVERLAY
-     ══════════════════════════════════════════════════════ -->
-<div id="submit-overlay" onclick="if(event.target===this)hideSubmitOverlay()">
-  <div id="so-inner">
-    <div id="so-bg"></div>
-    <span id="so-emoji">◉</span>
-    <span id="so-word"></span>
-    <p id="so-reflection"></p>
-    <span id="so-city"></span>
-    <button id="so-twin-btn">Find my Mood Twin →</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     MOOD TWIN PANEL
-     ══════════════════════════════════════════════════════ -->
-<div id="twin-panel">
-  <button class="twin-close" onclick="closeTwinPanel()">✕</button>
-  <div style="margin-bottom:10px">
-    <span id="twin-mood-dot"></span>
-    <span id="twin-city-name"></span>
-  </div>
-  <span id="twin-city-country"></span>
-  <span id="twin-city-sent"></span>
-  <span id="twin-story">Composing your story…</span>
-  <button id="twin-share-btn">Share this connection →</button>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     ARCHETYPE PANEL
-     ══════════════════════════════════════════════════════ -->
-<div id="archetype-panel">
-  <span id="arch-symbol">✦</span>
-  <span id="arch-name">THE WITNESS</span>
-  <p id="arch-desc"></p>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     MOOD WRAPPED OVERLAY
-     ══════════════════════════════════════════════════════ -->
-<div id="wrapped-overlay" onclick="if(event.target===this)closeWrapped()">
-  <div id="wrapped-box">
-    <button class="wrapped-close" onclick="closeWrapped()">✕</button>
-
-    <div id="wrapped-loading">Composing your emotional year…</div>
-
-    <div id="wrapped-content" style="display:none">
-      <span id="wrapped-identity">THE WITNESS</span>
-      <span id="wrapped-headline"></span>
-      <span id="wrapped-narrative"></span>
-
-      <div class="wrapped-stats">
-        <div class="wrapped-stat">
-          <span id="wrapped-top-mood" class="wrapped-stat-val">—</span>
-          <span class="wrapped-stat-label">Top Mood</span>
-        </div>
-        <div class="wrapped-stat">
-          <span id="wrapped-streak" class="wrapped-stat-val">0</span>
-          <span class="wrapped-stat-label">Streak</span>
-        </div>
-        <div class="wrapped-stat">
-          <span id="wrapped-total" class="wrapped-stat-val">0</span>
-          <span class="wrapped-stat-label">Signals</span>
-        </div>
-      </div>
-
-      <div id="wrapped-dist"></div>
-      <span id="wrapped-affirmation"></span>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     PRO GATE OVERLAY
-     ══════════════════════════════════════════════════════ -->
-<div id="pro-overlay" onclick="if(event.target===this)closeProGate()">
-  <div id="pro-box">
-    <button class="pro-close-btn" onclick="closeProGate()">✕</button>
-    <div class="pro-title">GMR PRO</div>
-    <div class="pro-subtitle">Unlock the full signal</div>
-    <span id="pro-feature-name"></span>
-    <div id="pro-feature-list"></div>
-    <span class="pro-price">$4.99</span>
-    <span class="pro-price-sub">PER MONTH · CANCEL ANYTIME</span>
-    <button class="pro-upgrade-btn" onclick="upgradeToPro()">Unlock Pro</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     PRINT SHOP OVERLAY
-     ══════════════════════════════════════════════════════ -->
-<div id="print-overlay" onclick="if(event.target===this)closePrintShop()">
-  <div class="print-overlay-inner">
-    <div class="print-overlay-title">
-      <span>PRINT SHOP</span>
-      <button onclick="closePrintShop()" style="font-size:18px;color:rgba(255,255,255,0.3);cursor:pointer">✕</button>
-    </div>
-    <div id="print-grid"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     TOOLTIP
-     ══════════════════════════════════════════════════════ -->
-<div id="tooltip">
-  <span id="tt-place"></span>
-  <span id="tt-mood"></span>
-  <span id="tt-sentence"></span>
-  <span id="tt-keywords"></span>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     AURA CARD (offscreen, for html2canvas)
-     ══════════════════════════════════════════════════════ -->
-<div id="aura-card">
-  <div id="aura-bg"></div>
-  <div id="aura-content">
-    <span id="aura-word">CALM</span>
-    <span id="aura-type">SERENITY</span>
-    <span id="aura-loc">Earth</span>
-    <span id="aura-date"></span>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     EVENT BANNER
-     ══════════════════════════════════════════════════════ -->
-<div id="event-banner"></div>
-
-<!-- ══════════════════════════════════════════════════════
-     TOAST
-     ══════════════════════════════════════════════════════ -->
-<div id="toast"></div>
-
-<!-- ══════════════════════════════════════════════════════
-     SCRIPTS
-     Load order matters — config first, then engines,
-     then UI glue, then main boot last.
-     ══════════════════════════════════════════════════════ -->
-
-<!-- Three.js r128 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════════
+// ANIMA MUNDI — Global Mood Ring
+// Full WebGL 3D Globe with cinematic atmosphere
+// ══════════════════════════════════════════════════════
 
-<!-- html2canvas (for aura card download) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+'use strict';
 
-<!-- Supabase (optional — falls back to simulation if no config) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+// ── MOOD SYSTEM ──
+const MOODS = {
+  joy:     {hex:'#F7C948',glow:'rgba(247,201,72,0.45)',  freq:261.63,organ:[0,4,7,12]},
+  love:    {hex:'#FF6B8A',glow:'rgba(255,107,138,0.45)', freq:293.66,organ:[0,3,7,10]},
+  hope:    {hex:'#7EC8FF',glow:'rgba(126,200,255,0.45)', freq:329.63,organ:[0,5,7,12]},
+  calm:    {hex:'#5DDCB8',glow:'rgba(93,220,184,0.45)',  freq:174.61,organ:[0,4,7,11]},
+  sad:     {hex:'#7B9FC4',glow:'rgba(123,159,196,0.45)', freq:220.00,organ:[0,3,7,10]},
+  anxious: {hex:'#E8A84A',glow:'rgba(232,168,74,0.45)',  freq:246.94,organ:[0,1,5,8]},
+  angry:   {hex:'#E85555',glow:'rgba(232,85,85,0.45)',   freq:185.00,organ:[0,2,6,8]},
+  numb:    {hex:'#8888A4',glow:'rgba(136,136,164,0.45)', freq:196.00,organ:[0,2,4,6]},
+  excited: {hex:'#B87FFF',glow:'rgba(184,127,255,0.45)', freq:392.00,organ:[0,4,7,9]},
+  grateful:{hex:'#68D480',glow:'rgba(104,212,128,0.45)', freq:311.13,organ:[0,4,7,12]},
+};
 
-<!-- GMR modules — config must be first -->
-<script src="js/config.js?v=7"></script>
-<script src="js/globe.js?v=7"></script>
-<script src="js/map.js?v=7"></script>
-<script src="js/audio.js?v=7"></script>
-<script src="js/ai.js?v=7"></script>
-<script src="js/streaks.js?v=7"></script>
-<script src="js/viral.js?v=7"></script>
-<script src="js/monetize.js?v=7"></script>
-<script src="js/ui.js?v=7"></script>
-<script src="js/main.js?v=7"></script>
+const COUNTRIES = [
+  {iso:'ITA',name:'Italy',lat:41.9,lng:12.5,mood:'love',score:{joy:.9,love:.95,hope:.8,calm:.7,sad:.3,anxious:.4,angry:.3,numb:.2,excited:.85,grateful:.8}},
+  {iso:'FRA',name:'France',lat:46.2,lng:2.2,mood:'love',score:{joy:.75,love:.85,hope:.7,calm:.65,sad:.4,anxious:.45,angry:.35,numb:.3,excited:.7,grateful:.6}},
+  {iso:'DEU',name:'Germany',lat:51.2,lng:10.4,mood:'calm',score:{joy:.65,love:.6,hope:.75,calm:.85,sad:.35,anxious:.4,angry:.3,numb:.4,excited:.6,grateful:.7}},
+  {iso:'ESP',name:'Spain',lat:40.5,lng:-3.7,mood:'joy',score:{joy:.9,love:.8,hope:.75,calm:.7,sad:.3,anxious:.35,angry:.25,numb:.2,excited:.85,grateful:.75}},
+  {iso:'GBR',name:'United Kingdom',lat:55.4,lng:-3.4,mood:'anxious',score:{joy:.6,love:.55,hope:.6,calm:.5,sad:.5,anxious:.75,angry:.45,numb:.4,excited:.55,grateful:.5}},
+  {iso:'USA',name:'United States',lat:37.1,lng:-95.7,mood:'excited',score:{joy:.7,love:.65,hope:.7,calm:.5,sad:.45,anxious:.6,angry:.5,numb:.35,excited:.85,grateful:.65}},
+  {iso:'JPN',name:'Japan',lat:36.2,lng:138.3,mood:'calm',score:{joy:.7,love:.65,hope:.75,calm:.9,sad:.4,anxious:.5,angry:.25,numb:.45,excited:.6,grateful:.8}},
+  {iso:'BRA',name:'Brazil',lat:-14.2,lng:-51.9,mood:'joy',score:{joy:.92,love:.85,hope:.8,calm:.6,sad:.35,anxious:.4,angry:.35,numb:.2,excited:.88,grateful:.75}},
+  {iso:'IND',name:'India',lat:20.6,lng:78.9,mood:'hope',score:{joy:.8,love:.75,hope:.9,calm:.55,sad:.4,anxious:.5,angry:.4,numb:.25,excited:.75,grateful:.85}},
+  {iso:'CHN',name:'China',lat:35.9,lng:104.2,mood:'hope',score:{joy:.65,love:.6,hope:.8,calm:.7,sad:.35,anxious:.4,angry:.3,numb:.4,excited:.7,grateful:.65}},
+  {iso:'RUS',name:'Russia',lat:61.5,lng:105.3,mood:'numb',score:{joy:.45,love:.4,hope:.45,calm:.5,sad:.6,anxious:.5,angry:.5,numb:.8,excited:.35,grateful:.35}},
+  {iso:'AUS',name:'Australia',lat:-25.3,lng:133.8,mood:'joy',score:{joy:.85,love:.75,hope:.8,calm:.75,sad:.25,anxious:.3,angry:.25,numb:.2,excited:.8,grateful:.8}},
+  {iso:'ZAF',name:'South Africa',lat:-30.6,lng:22.9,mood:'hope',score:{joy:.7,love:.65,hope:.85,calm:.55,sad:.45,anxious:.45,angry:.4,numb:.3,excited:.65,grateful:.7}},
+  {iso:'MEX',name:'Mexico',lat:23.6,lng:-102.5,mood:'joy',score:{joy:.88,love:.8,hope:.75,calm:.6,sad:.35,anxious:.4,angry:.35,numb:.2,excited:.82,grateful:.75}},
+  {iso:'ARG',name:'Argentina',lat:-38.4,lng:-63.6,mood:'sad',score:{joy:.6,love:.6,hope:.55,calm:.5,sad:.75,anxious:.55,angry:.4,numb:.35,excited:.5,grateful:.45}},
+  {iso:'NGA',name:'Nigeria',lat:9.1,lng:8.7,mood:'excited',score:{joy:.8,love:.7,hope:.82,calm:.5,sad:.4,anxious:.45,angry:.35,numb:.25,excited:.85,grateful:.75}},
+  {iso:'KOR',name:'South Korea',lat:35.9,lng:127.8,mood:'excited',score:{joy:.72,love:.65,hope:.75,calm:.6,sad:.4,anxious:.55,angry:.35,numb:.35,excited:.82,grateful:.65}},
+  {iso:'TUR',name:'Turkey',lat:38.9,lng:35.2,mood:'anxious',score:{joy:.6,love:.6,hope:.6,calm:.45,sad:.5,anxious:.78,angry:.5,numb:.35,excited:.55,grateful:.5}},
+  {iso:'EGY',name:'Egypt',lat:26.8,lng:30.8,mood:'anxious',score:{joy:.6,love:.6,hope:.65,calm:.45,sad:.5,anxious:.72,angry:.45,numb:.35,excited:.55,grateful:.55}},
+  {iso:'SWE',name:'Sweden',lat:60.1,lng:18.6,mood:'calm',score:{joy:.7,love:.65,hope:.75,calm:.88,sad:.3,anxious:.35,angry:.2,numb:.3,excited:.55,grateful:.75}},
+  {iso:'NOR',name:'Norway',lat:64.3,lng:16.4,mood:'grateful',score:{joy:.75,love:.7,hope:.8,calm:.85,sad:.25,anxious:.3,angry:.2,numb:.25,excited:.6,grateful:.9}},
+  {iso:'GRC',name:'Greece',lat:39.1,lng:21.8,mood:'hope',score:{joy:.72,love:.75,hope:.8,calm:.6,sad:.4,anxious:.5,angry:.35,numb:.3,excited:.65,grateful:.65}},
+  {iso:'UKR',name:'Ukraine',lat:48.4,lng:31.2,mood:'sad',score:{joy:.4,love:.5,hope:.65,calm:.3,sad:.85,anxious:.7,angry:.55,numb:.5,excited:.35,grateful:.45}},
+];
 
+const CITIES = [
+  {name:'Rome',country:'Italy',lat:41.9,lng:12.5,mood:'love',pulse:'Where time bends around stones that remember empire.'},
+  {name:'Tokyo',country:'Japan',lat:35.7,lng:139.7,mood:'calm',pulse:'A city of ten million silences, perfectly arranged.'},
+  {name:'New York',country:'United States',lat:40.7,lng:-74.0,mood:'excited',pulse:'Every corner holds a dream that hasn\'t given up yet.'},
+  {name:'Paris',country:'France',lat:48.9,lng:2.3,mood:'love',pulse:'Love here is a language spoken through café windows.'},
+  {name:'London',country:'United Kingdom',lat:51.5,lng:-0.1,mood:'anxious',pulse:'The Thames carries centuries of unspoken worry to the sea.'},
+  {name:'Sydney',country:'Australia',lat:-33.9,lng:151.2,mood:'joy',pulse:'Light arrives here first, generous and unapologetic.'},
+  {name:'Mumbai',country:'India',lat:19.1,lng:72.9,mood:'excited',pulse:'A billion heartbeats finding rhythm in the chaos.'},
+  {name:'São Paulo',country:'Brazil',lat:-23.5,lng:-46.6,mood:'joy',pulse:'The jungle remembers what the city is still becoming.'},
+  {name:'Lagos',country:'Nigeria',lat:6.5,lng:3.4,mood:'excited',pulse:'Youth and velocity, an entire continent waking up.'},
+  {name:'Moscow',country:'Russia',lat:55.8,lng:37.6,mood:'numb',pulse:'Gold domes above, the permafrost holds its secrets below.'},
+  {name:'Cairo',country:'Egypt',lat:30.1,lng:31.2,mood:'anxious',pulse:'The Nile remembers patience; the city has forgotten it.'},
+  {name:'Buenos Aires',country:'Argentina',lat:-34.6,lng:-58.4,mood:'sad',pulse:'Tango was invented here because grief needed to move.'},
+  {name:'Seoul',country:'South Korea',lat:37.6,lng:126.9,mood:'excited',pulse:'The future arrives here thirty minutes early every day.'},
+  {name:'Berlin',country:'Germany',lat:52.5,lng:13.4,mood:'hope',pulse:'A city rebuilt on the conviction that tomorrow can differ.'},
+  {name:'Nairobi',country:'Kenya',lat:-1.3,lng:36.8,mood:'hope',pulse:'The savanna breeze carries something that smells like beginning.'},
+  {name:'Venice',country:'Italy',lat:45.4,lng:12.3,mood:'calm',pulse:'Silence here is measured in the distance between gondolas.'},
+  {name:'Stockholm',country:'Sweden',lat:59.3,lng:18.1,mood:'calm',pulse:'The northern light teaches the art of patient beauty.'},
+  {name:'Athens',country:'Greece',lat:37.9,lng:23.7,mood:'hope',pulse:'Democracy was born here in the space between arguments.'},
+];
+
+const WORDS = {
+  joy:['radiant','luminous','gleaming','golden','joyful','light','bliss','elated'],
+  love:['tender','devoted','longing','warmth','cherish','adore','beloved','soulful'],
+  hope:['rising','becoming','emerging','forward','dawn','possible','aspire','believe'],
+  calm:['still','serene','peaceful','tranquil','quiet','centered','grounded','vast'],
+  sad:['heavy','grey','longing','hollow','mourning','wistful','blue','fading'],
+  anxious:['trembling','fractured','urgent','restless','flickering','tense','frantic'],
+  angry:['burning','fierce','defiant','raw','thunder','blazing','storming'],
+  numb:['distant','hollow','silent','frozen','absent','grey','void','still'],
+  excited:['electric','blazing','surging','kinetic','vibrant','pulse','alive'],
+  grateful:['thankful','blessed','humble','grace','abundant','cherished','gifted'],
+};
+
+// ── GLOBAL STATE ──
+let scene,camera,renderer,globe,atmosphere,clouds,stars;
+let earthMesh,glowMesh,cloudMesh,starField;
+let raycaster,mouse=new THREE.Vector2();
+let isDragging=false,dragStart={x:0,y:0};
+let rotX=0,rotY=0,targetRotX=0,targetRotY=0;
+let autoRotate=true,autoRotateSpeed=0.0008;
+let currentMood='calm';
+let globalScores={joy:.6,love:.65,hope:.7,calm:.85,sad:.35,anxious:.4,angry:.25,numb:.3,excited:.6,grateful:.7};
+let signalCount=0;
+let audioCtx=null,audioOn=false,droneNodes=[];
+let organNodes=[];
+let vizInterval=null;
+let hoveredCountry=null;
+let moodParticles=[];
+let animFrame=0;
+let cursorX=0,cursorY=0;
+let cursorTargetX=0,cursorTargetY=0;
+
+// ── THREE.JS SETUP ──
+function initThree(){
+  scene=new THREE.Scene();
+  scene.background=null;
+
+  camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,1000);
+  camera.position.set(0,0,2.8);
+
+  renderer=new THREE.WebGLRenderer({
+    canvas:document.getElementById('gl'),
+    antialias:true,
+    alpha:true,
+    powerPreference:'high-performance'
+  });
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.2;
+
+  raycaster=new THREE.Raycaster();
+}
+
+// ── PROCEDURAL EARTH TEXTURE ──
+function makeEarthTexture(size=2048){
+  const c=document.createElement('canvas');
+  c.width=size;c.height=size/2;
+  const ctx=c.getContext('2d');
+
+  // Deep ocean base
+  const oceanGrad=ctx.createLinearGradient(0,0,0,c.height);
+  oceanGrad.addColorStop(0,'#0a1628');
+  oceanGrad.addColorStop(.4,'#0d1f3c');
+  oceanGrad.addColorStop(.6,'#0a1628');
+  oceanGrad.addColorStop(1,'#060e1a');
+  ctx.fillStyle=oceanGrad;
+  ctx.fillRect(0,0,c.width,c.height);
+
+  // Ocean shimmer
+  for(let i=0;i<3000;i++){
+    const x=Math.random()*c.width;
+    const y=Math.random()*c.height;
+    const r=Math.random()*2+.5;
+    const a=Math.random()*.12+.03;
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(93,180,220,${a})`;
+    ctx.fill();
+  }
+
+  // Land masses — approximate real shapes
+  ctx.fillStyle='#1a2a1a';
+
+  const lands=[
+    // N America
+    {pts:[[.04,.2],[.15,.12],[.22,.15],[.28,.22],[.3,.35],[.22,.42],[.18,.38],[.1,.32],[.04,.2]]},
+    // S America
+    {pts:[[.18,.42],[.24,.38],[.3,.4],[.32,.58],[.28,.7],[.22,.72],[.18,.62],[.16,.5],[.18,.42]]},
+    // Europe
+    {pts:[[.44,.15],[.5,.12],[.56,.14],[.58,.22],[.54,.28],[.48,.26],[.44,.22],[.44,.15]]},
+    // Africa
+    {pts:[[.46,.28],[.54,.28],[.58,.35],[.56,.55],[.52,.65],[.46,.65],[.42,.55],[.42,.38],[.46,.28]]},
+    // Asia
+    {pts:[[.58,.1],[.75,.08],[.88,.12],[.9,.25],[.85,.32],[.78,.35],[.72,.38],[.68,.32],[.64,.25],[.6,.18],[.58,.1]]},
+    // Australia
+    {pts:[[.78,.52],[.86,.5],[.9,.54],[.88,.62],[.82,.64],[.78,.6],[.78,.52]]},
+    // Greenland
+    {pts:[[.25,.08],[.32,.06],[.36,.1],[.34,.18],[.28,.2],[.25,.15],[.25,.08]]},
+  ];
+
+  lands.forEach(l=>{
+    ctx.beginPath();
+    l.pts.forEach((p,i)=>{
+      const fn=i===0?'moveTo':'lineTo';
+      ctx[fn](p[0]*c.width,p[1]*c.height);
+    });
+    ctx.closePath();
+    // Land gradient
+    const lg=ctx.createRadialGradient(
+      l.pts[0][0]*c.width,l.pts[0][1]*c.height,0,
+      l.pts[0][0]*c.width,l.pts[0][1]*c.height,c.width*.2
+    );
+    lg.addColorStop(0,'#2a3d2a');
+    lg.addColorStop(.4,'#1e301e');
+    lg.addColorStop(1,'#142414');
+    ctx.fillStyle=lg;
+    ctx.fill();
+
+    // Land detail texture
+    ctx.save();ctx.clip();
+    for(let i=0;i<200;i++){
+      const bbox=l.pts.reduce((a,p)=>({
+        minX:Math.min(a.minX,p[0]),maxX:Math.max(a.maxX,p[0]),
+        minY:Math.min(a.minY,p[1]),maxY:Math.max(a.maxY,p[1])
+      }),{minX:1,maxX:0,minY:1,maxY:0});
+      const x=(bbox.minX+Math.random()*(bbox.maxX-bbox.minX))*c.width;
+      const y=(bbox.minY+Math.random()*(bbox.maxY-bbox.minY))*c.height;
+      ctx.beginPath();
+      ctx.arc(x,y,Math.random()*8+2,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${Math.random()>0.5?'40,60,30':'20,35,15'},${Math.random()*.3+.1})`;
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+
+  // Mountain ranges
+  ctx.strokeStyle='rgba(60,50,30,0.4)';
+  ctx.lineWidth=2;
+  [[.44,.22,.5,.18],[.58,.15,.65,.18],[.28,.22,.32,.28]].forEach(([x1,y1,x2,y2])=>{
+    ctx.beginPath();
+    for(let i=0;i<12;i++){
+      const t=i/11;
+      ctx.moveTo((x1+t*(x2-x1))*c.width,(y1+t*(y2-y1))*c.height);
+      ctx.lineTo((x1+t*(x2-x1))*c.width+6,(y1+t*(y2-y1))*c.height-8);
+    }
+    ctx.stroke();
+  });
+
+  return new THREE.CanvasTexture(c);
+}
+
+// ── NIGHT LIGHTS TEXTURE ──
+function makeNightTexture(size=2048){
+  const c=document.createElement('canvas');
+  c.width=size;c.height=size/2;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#000';
+  ctx.fillRect(0,0,c.width,c.height);
+
+  // City light clusters (lat/lng → UV)
+  const cities=[
+    // Europe
+    {u:.48,v:.2,r:18,density:60},{u:.5,v:.22,r:12,density:40},
+    {u:.51,v:.19,r:10,density:35},{u:.47,v:.21,r:8,density:30},
+    // N America East
+    {u:.18,v:.22,r:20,density:70},{u:.17,v:.23,r:14,density:50},
+    {u:.16,v:.24,r:10,density:40},
+    // N America West
+    {u:.06,v:.25,r:12,density:45},{u:.07,v:.24,r:8,density:35},
+    // Japan/Korea
+    {u:.83,v:.22,r:14,density:55},{u:.82,v:.23,r:10,density:45},
+    // India
+    {u:.66,v:.3,r:18,density:50},{u:.67,v:.32,r:12,density:40},
+    // China coast
+    {u:.8,v:.24,r:16,density:50},{u:.81,v:.26,r:12,density:40},
+    // Middle East
+    {u:.58,v:.28,r:8,density:30},
+    // Australia
+    {u:.84,v:.56,r:8,density:30},{u:.85,v:.58,r:6,density:25},
+    // Brazil
+    {u:.21,v:.5,r:12,density:35},
+    // S Africa
+    {u:.5,v:.58,r:8,density:28},
+  ];
+
+  cities.forEach(city=>{
+    const cx=city.u*c.width;
+    const cy=city.v*c.height;
+    for(let i=0;i<city.density;i++){
+      const angle=Math.random()*Math.PI*2;
+      const dist=Math.random()*city.r;
+      const x=cx+Math.cos(angle)*dist;
+      const y=cy+Math.sin(angle)*dist;
+      const bright=Math.random();
+      const r=Math.random()*1.5+.3;
+      const g=bright>0.6?
+        `rgba(255,240,180,${Math.random()*.9+.1})`:
+        `rgba(255,200,120,${Math.random()*.7+.1})`;
+      ctx.beginPath();
+      ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle=g;
+      ctx.fill();
+      if(Math.random()<.2){
+        const grd=ctx.createRadialGradient(x,y,0,x,y,r*4);
+        grd.addColorStop(0,'rgba(255,230,150,0.15)');
+        grd.addColorStop(1,'transparent');
+        ctx.beginPath();
+        ctx.arc(x,y,r*4,0,Math.PI*2);
+        ctx.fillStyle=grd;
+        ctx.fill();
+      }
+    }
+  });
+
+  return new THREE.CanvasTexture(c);
+}
+
+// ── CLOUD TEXTURE ──
+function makeCloudTexture(size=1024){
+  const c=document.createElement('canvas');
+  c.width=size;c.height=size/2;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='rgba(0,0,0,0)';
+  ctx.fillRect(0,0,c.width,c.height);
+
+  for(let i=0;i<120;i++){
+    const x=Math.random()*c.width;
+    const y=Math.random()*c.height;
+    const rx=Math.random()*80+20;
+    const ry=Math.random()*30+10;
+    const a=Math.random()*.55+.1;
+    const g=ctx.createRadialGradient(x,y,0,x,y,rx);
+    g.addColorStop(0,`rgba(255,255,255,${a})`);
+    g.addColorStop(.6,`rgba(255,255,255,${a*.4})`);
+    g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);
+    ctx.fillStyle=g;
+    ctx.fill();
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+// ── SPECULAR TEXTURE ──
+function makeSpecularTexture(size=1024){
+  const c=document.createElement('canvas');
+  c.width=size;c.height=size/2;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#888';// ocean specular
+  ctx.fillRect(0,0,c.width,c.height);
+  // Land = no specular
+  ctx.fillStyle='#111';
+  // rough land areas
+  [[.04,.2,.3,.52],[.44,.12,.5,.28],[.46,.28,.58,.65],[.58,.08,.9,.4],[.78,.5,.9,.65],[.25,.06,.36,.2]].forEach(([x1,y1,x2,y2])=>{
+    ctx.fillRect(x1*c.width,y1*c.height,(x2-x1)*c.width,(y2-y1)*c.height);
+  });
+  return new THREE.CanvasTexture(c);
+}
+
+// ── BUMP TEXTURE ──
+function makeBumpTexture(size=1024){
+  const c=document.createElement('canvas');
+  c.width=size;c.height=size/2;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#222';
+  ctx.fillRect(0,0,c.width,c.height);
+  // Mountains = bright
+  for(let i=0;i<800;i++){
+    const x=Math.random()*c.width;
+    const y=Math.random()*c.height*.9+c.height*.05;
+    const r=Math.random()*5+1;
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(180,180,180,${Math.random()*.3})`;
+    ctx.fill();
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+// ── GLOBE SHADERS ──
+const atmosphereVert=`
+varying vec3 vNormal;
+varying vec3 vPosition;
+void main(){
+  vNormal=normalize(normalMatrix*normal);
+  vPosition=position;
+  gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+}
+`;
+
+const atmosphereFrag=`
+uniform vec3 glowColor;
+uniform float glowIntensity;
+varying vec3 vNormal;
+void main(){
+  float intensity=pow(0.65-dot(vNormal,vec3(0,0,1.0)),3.0);
+  gl_FragColor=vec4(glowColor,intensity*glowIntensity);
+}
+`;
+
+const earthFrag=`
+uniform sampler2D dayTexture;
+uniform sampler2D nightTexture;
+uniform sampler2D cloudTexture;
+uniform sampler2D specularTexture;
+uniform vec3 sunDirection;
+uniform vec3 moodColor;
+uniform float moodStrength;
+uniform float cloudOffset;
+varying vec3 vNormal;
+varying vec2 vUv;
+varying vec3 vPosition;
+
+void main(){
+  vec3 normal=normalize(vNormal);
+  float sunDot=dot(normal,normalize(sunDirection));
+
+  // Day/night blend
+  float dayFactor=smoothstep(-0.25,0.25,sunDot);
+  vec4 dayColor=texture2D(dayTexture,vUv);
+  vec4 nightColor=texture2D(nightTexture,vUv);
+  vec3 baseColor=mix(nightColor.rgb*0.9,dayColor.rgb,dayFactor);
+
+  // Specular
+  vec3 spec=texture2D(specularTexture,vUv).rgb;
+  vec3 sunDir=normalize(sunDirection);
+  vec3 halfDir=normalize(sunDir+normalize(vec3(0,0,1)));
+  float specPow=pow(max(dot(normal,halfDir),0.0),32.0)*spec.r*dayFactor;
+  baseColor+=vec3(.6,.7,.8)*specPow*.5;
+
+  // Clouds
+  vec2 cloudUv=vUv+vec2(cloudOffset,0.0);
+  vec4 cloud=texture2D(cloudTexture,cloudUv);
+  vec3 cloudColor=mix(vec3(.12,.16,.22),vec3(.9,.93,.97),dayFactor);
+  baseColor=mix(baseColor,cloudColor,cloud.r*cloud.a*0.7);
+
+  // Mood tint — subtle aurora on surface
+  float lat=abs(vUv.y-0.5)*2.0;
+  float moodGlow=smoothstep(.6,.9,lat)*moodStrength*sunDot*0.5;
+  baseColor=mix(baseColor,moodColor,moodGlow*0.35);
+
+  // Atmosphere limb darkening
+  float limb=pow(1.0-abs(dot(normal,vec3(0,0,1.0))),2.0);
+  baseColor=mix(baseColor,vec3(0.02,0.05,0.12),limb*0.5);
+
+  gl_FragColor=vec4(baseColor,1.0);
+}
+`;
+
+const earthVert=`
+varying vec3 vNormal;
+varying vec2 vUv;
+varying vec3 vPosition;
+void main(){
+  vNormal=normalize(normalMatrix*normal);
+  vUv=uv;
+  vPosition=position;
+  gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+}
+`;
+
+// ── BUILD GLOBE ──
+function buildGlobe(){
+  const geo=new THREE.SphereGeometry(1,128,64);
+
+  // Textures
+  const dayTex=makeEarthTexture(2048);
+  const nightTex=makeNightTexture(1024);
+  const cloudTex=makeCloudTexture(1024);
+  const specTex=makeSpecularTexture(512);
+  const bumpTex=makeBumpTexture(512);
+
+  const earthMat=new THREE.ShaderMaterial({
+    uniforms:{
+      dayTexture:{value:dayTex},
+      nightTexture:{value:nightTex},
+      cloudTexture:{value:cloudTex},
+      specularTexture:{value:specTex},
+      sunDirection:{value:new THREE.Vector3(1.5,0.5,1).normalize()},
+      moodColor:{value:new THREE.Color(MOODS.calm.hex)},
+      moodStrength:{value:0.5},
+      cloudOffset:{value:0.0},
+    },
+    vertexShader:earthVert,
+    fragmentShader:earthFrag,
+  });
+
+  earthMesh=new THREE.Mesh(geo,earthMat);
+  scene.add(earthMesh);
+
+  // Atmosphere glow
+  const atmGeo=new THREE.SphereGeometry(1.08,64,32);
+  const atmMat=new THREE.ShaderMaterial({
+    uniforms:{
+      glowColor:{value:new THREE.Color(0.2,0.5,0.9)},
+      glowIntensity:{value:1.8},
+    },
+    vertexShader:atmosphereVert,
+    fragmentShader:atmosphereFrag,
+    side:THREE.FrontSide,
+    blending:THREE.AdditiveBlending,
+    transparent:true,
+    depthWrite:false,
+  });
+  glowMesh=new THREE.Mesh(atmGeo,atmMat);
+  scene.add(glowMesh);
+
+  // Outer glow
+  const outerGeo=new THREE.SphereGeometry(1.25,32,16);
+  const outerMat=new THREE.ShaderMaterial({
+    uniforms:{
+      glowColor:{value:new THREE.Color(0.05,0.15,0.4)},
+      glowIntensity:{value:1.2},
+    },
+    vertexShader:atmosphereVert,
+    fragmentShader:atmosphereFrag,
+    side:THREE.BackSide,
+    blending:THREE.AdditiveBlending,
+    transparent:true,
+    depthWrite:false,
+  });
+  const outerMesh=new THREE.Mesh(outerGeo,outerMat);
+  scene.add(outerMesh);
+}
+
+// ── STAR FIELD ──
+function buildStars(){
+  const count=8000;
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(count*3);
+  const sizes=new Float32Array(count);
+  const colors=new Float32Array(count*3);
+
+  for(let i=0;i<count;i++){
+    const theta=Math.random()*Math.PI*2;
+    const phi=Math.acos(2*Math.random()-1);
+    const r=80+Math.random()*120;
+    pos[i*3]=r*Math.sin(phi)*Math.cos(theta);
+    pos[i*3+1]=r*Math.sin(phi)*Math.sin(theta);
+    pos[i*3+2]=r*Math.cos(phi);
+    sizes[i]=Math.random()*2.5+.3;
+
+    // Star colors: white, blue-white, yellow, orange
+    const type=Math.random();
+    if(type<.6){colors[i*3]=1;colors[i*3+1]=1;colors[i*3+2]=1;}
+    else if(type<.75){colors[i*3]=.8;colors[i*3+1]=.9;colors[i*3+2]=1;}
+    else if(type<.88){colors[i*3]=1;colors[i*3+1]=.95;colors[i*3+2]=.7;}
+    else{colors[i*3]=1;colors[i*3+1]=.75;colors[i*3+2]=.5;}
+  }
+
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('size',new THREE.BufferAttribute(sizes,1));
+  geo.setAttribute('color',new THREE.BufferAttribute(colors,3));
+
+  const mat=new THREE.PointsMaterial({
+    size:.8,sizeAttenuation:true,
+    vertexColors:true,
+    transparent:true,opacity:.9,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false,
+  });
+
+  starField=new THREE.Points(geo,mat);
+  scene.add(starField);
+}
+
+// ── NEBULA / SPACE DUST ──
+function buildNebula(){
+  // Distant background nebula via large sphere with gradient texture
+  const c=document.createElement('canvas');
+  c.width=512;c.height=512;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#000';
+  ctx.fillRect(0,0,512,512);
+
+  const nebulaClouds=[
+    {x:128,y:128,r:180,col:'rgba(20,15,40,0.8)'},
+    {x:380,y:200,r:140,col:'rgba(10,25,40,0.6)'},
+    {x:256,y:380,r:160,col:'rgba(15,20,35,0.7)'},
+    {x:80,y:380,r:100,col:'rgba(25,10,30,0.5)'},
+  ];
+
+  nebulaClouds.forEach(n=>{
+    const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
+    g.addColorStop(0,n.col);
+    g.addColorStop(1,'transparent');
+    ctx.beginPath();
+    ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    ctx.fillStyle=g;
+    ctx.fill();
+  });
+
+  const tex=new THREE.CanvasTexture(c);
+  const geo=new THREE.SphereGeometry(200,32,16);
+  const mat=new THREE.MeshBasicMaterial({
+    map:tex,side:THREE.BackSide,
+    transparent:true,opacity:.6,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false,
+  });
+  scene.add(new THREE.Mesh(geo,mat));
+}
+
+// ── CITY MARKER DOTS ──
+let cityDots=[];
+function buildCityDots(){
+  CITIES.forEach(city=>{
+    const pos=latLngToVec3(city.lat,city.lng,1.005);
+
+    // Glow sphere
+    const geo=new THREE.SphereGeometry(0.006,8,8);
+    const mat=new THREE.MeshBasicMaterial({
+      color:new THREE.Color(MOODS[city.mood].hex),
+      transparent:true,opacity:.9,
+    });
+    const dot=new THREE.Mesh(geo,mat);
+    dot.position.copy(pos);
+    dot.userData={city,type:'city'};
+    scene.add(dot);
+
+    // Halo ring
+    const ringGeo=new THREE.RingGeometry(.008,.012,16);
+    const ringMat=new THREE.MeshBasicMaterial({
+      color:new THREE.Color(MOODS[city.mood].hex),
+      transparent:true,opacity:.4,
+      side:THREE.DoubleSide,
+    });
+    const ring=new THREE.Mesh(ringGeo,ringMat);
+    ring.position.copy(pos);
+    ring.lookAt(new THREE.Vector3(0,0,0));
+    ring.lookAt(pos.clone().multiplyScalar(2));
+    scene.add(ring);
+
+    cityDots.push({dot,ring,city,phase:Math.random()*Math.PI*2});
+  });
+}
+
+// ── MOOD AURORA PARTICLES ──
+function buildMoodAurora(){
+  // Ring of particles at polar regions
+  const count=600;
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(count*3);
+  const alphas=new Float32Array(count);
+
+  for(let i=0;i<count;i++){
+    const theta=Math.random()*Math.PI*2;
+    const lat=(Math.random()>.5?1:-1)*(65+Math.random()*15)*Math.PI/180;
+    const r=1.05+Math.random()*.08;
+    pos[i*3]=r*Math.cos(lat)*Math.cos(theta);
+    pos[i*3+1]=r*Math.sin(lat);
+    pos[i*3+2]=r*Math.cos(lat)*Math.sin(theta);
+    alphas[i]=Math.random();
+  }
+
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+
+  const mat=new THREE.PointsMaterial({
+    size:.025,
+    color:new THREE.Color(MOODS.calm.hex),
+    transparent:true,opacity:.5,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false,
+  });
+
+  const aurora=new THREE.Points(geo,mat);
+  scene.add(aurora);
+  scene.userData.aurora=aurora;
+}
+
+// ── HELPERS ──
+function latLngToVec3(lat,lng,r=1){
+  const phi=(90-lat)*Math.PI/180;
+  const theta=(lng+180)*Math.PI/180;
+  return new THREE.Vector3(
+    -r*Math.sin(phi)*Math.cos(theta),
+    r*Math.cos(phi),
+    r*Math.sin(phi)*Math.sin(theta)
+  );
+}
+
+function hexToVec3(hex){
+  const c=new THREE.Color(hex);
+  return new THREE.Vector3(c.r,c.g,c.b);
+}
+
+// ── LIGHTING ──
+function buildLights(){
+  // Sun directional light
+  const sun=new THREE.DirectionalLight(0xfff5e0,2.5);
+  sun.position.set(5,2,3);
+  scene.add(sun);
+
+  // Ambient (space glow)
+  const ambient=new THREE.AmbientLight(0x050a14,1.0);
+  scene.add(ambient);
+
+  // Rim light (opposite sun)
+  const rim=new THREE.DirectionalLight(0x1a3050,0.8);
+  rim.position.set(-5,-1,-3);
+  scene.add(rim);
+}
+
+// ── MOOD UPDATE ──
+function setMood(mood){
+  if(!MOODS[mood])return;
+  currentMood=mood;
+  const m=MOODS[mood];
+
+  // Globe shader
+  if(earthMesh){
+    earthMesh.material.uniforms.moodColor.value.set(m.hex);
+    earthMesh.material.uniforms.moodStrength.value=0.8;
+    setTimeout(()=>{
+      if(earthMesh)earthMesh.material.uniforms.moodStrength.value=0.5;
+    },3000);
+  }
+
+  // Atmosphere color
+  if(glowMesh){
+    const c=new THREE.Color(m.hex);
+    glowMesh.material.uniforms.glowColor.value.set(c.r*.3+.1,c.g*.3+.2,c.b*.3+.4);
+  }
+
+  // Aurora
+  if(scene.userData.aurora){
+    scene.userData.aurora.material.color.set(m.hex);
+  }
+
+  // CSS vars
+  document.documentElement.style.setProperty('--mc',m.hex);
+  document.documentElement.style.setProperty('--mg',m.glow);
+
+  // Panel
+  const el=document.getElementById('mp-dominant');
+  el.textContent=mood.toUpperCase();
+  el.style.color=m.hex;
+  el.style.textShadow=`0 0 60px ${m.glow}`;
+
+  renderBars();
+
+  // Organ shift
+  if(audioOn)shiftOrgan(mood);
+}
+
+function renderBars(){
+  const container=document.getElementById('mp-bars');
+  container.innerHTML='';
+  const sorted=Object.entries(globalScores).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  sorted.forEach(([mood,score])=>{
+    const row=document.createElement('div');row.className='mb-row';
+    row.innerHTML=`
+      <div class="mb-lbl">${mood}</div>
+      <div class="mb-track"><div class="mb-fill" style="width:${score*100}%;background:${MOODS[mood].hex}"></div></div>
+      <div class="mb-pct">${Math.round(score*100)}%</div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ── INTERACTION ──
+let mouseDown=false,dragDist=0;
+
+function onMouseMove(e){
+  cursorTargetX=e.clientX;
+  cursorTargetY=e.clientY;
+
+  mouse.x=(e.clientX/innerWidth)*2-1;
+  mouse.y=-(e.clientY/innerHeight)*2+1;
+
+  if(mouseDown){
+    const dx=e.clientX-dragStart.x;
+    const dy=e.clientY-dragStart.y;
+    dragDist+=Math.abs(dx)+Math.abs(dy);
+    targetRotY+=dx*.004;
+    targetRotX+=dy*.003;
+    targetRotX=Math.max(-Math.PI/2,Math.min(Math.PI/2,targetRotX));
+    dragStart={x:e.clientX,y:e.clientY};
+    isDragging=true;
+    autoRotate=false;
+    document.getElementById('gl').style.cursor='grabbing';
+  }
+
+  // Hover test
+  if(!mouseDown){
+    raycaster.setFromCamera(mouse,camera);
+    const hits=raycaster.intersectObjects(cityDots.map(d=>d.dot));
+    const cross=document.getElementById('crosshair');
+    const cursor=document.getElementById('cursor');
+    if(hits.length){
+      const city=hits[0].object.userData.city;
+      showTip(e.clientX,e.clientY,city);
+      cross.style.left=e.clientX+'px';
+      cross.style.top=e.clientY+'px';
+      cross.classList.add('on');
+      cursor.classList.add('hovering');
+    } else {
+      hideTip();
+      cross.classList.remove('on');
+      cursor.classList.remove('hovering');
+    }
+  }
+}
+
+function onMouseDown(e){
+  mouseDown=true;dragDist=0;
+  dragStart={x:e.clientX,y:e.clientY};
+  isDragging=false;
+}
+
+function onMouseUp(e){
+  mouseDown=false;
+  document.getElementById('gl').style.cursor='';
+  if(dragDist<5){
+    // Click
+    raycaster.setFromCamera(mouse,camera);
+    const hits=raycaster.intersectObjects(cityDots.map(d=>d.dot));
+    if(hits.length){
+      const city=hits[0].object.userData.city;
+      clickCity(city);
+    } else {
+      // Resume auto-rotate after pause
+      setTimeout(()=>autoRotate=true,5000);
+    }
+  }
+}
+
+function onWheel(e){
+  e.preventDefault();
+  const delta=e.deltaY>0?1.1:.9;
+  camera.position.z=Math.max(1.5,Math.min(6,camera.position.z*delta));
+}
+
+function clickCity(city){
+  setMood(city.mood);
+  document.getElementById('pz-text').innerHTML=city.pulse;
+  playClick();
+  // Zoom to city
+  const pos=latLngToVec3(city.lat,city.lng);
+  targetRotY=Math.atan2(pos.x,pos.z)+Math.PI;
+  targetRotX=-Math.asin(pos.y/pos.length());
+  setTimeout(()=>autoRotate=false,100);
+  setTimeout(()=>autoRotate=true,8000);
+}
+
+function showTip(x,y,city){
+  const tip=document.getElementById('tip');
+  document.getElementById('tip-name').textContent=city.name+', '+city.country;
+  document.getElementById('tip-mood').textContent=city.mood.toUpperCase();
+  document.getElementById('tip-pulse').textContent=city.pulse;
+  tip.style.borderColor=MOODS[city.mood].hex;
+  document.getElementById('tip-name').style.color=MOODS[city.mood].hex;
+  let tx=x+20,ty=y-10;
+  if(tx+260>innerWidth)tx=x-280;
+  if(ty+120>innerHeight)ty=y-130;
+  tip.style.left=tx+'px';tip.style.top=ty+'px';
+  tip.classList.add('on');
+}
+
+function hideTip(){document.getElementById('tip').classList.remove('on');}
+
+// ── LIVE FEED SIMULATION ──
+let totalSignals=0;
+function addFeed(){
+  const moodKeys=Object.keys(MOODS);
+  const mood=moodKeys[Math.floor(Math.random()*moodKeys.length)];
+  const words=WORDS[mood];
+  const word=words[Math.floor(Math.random()*words.length)];
+  const city=CITIES[Math.floor(Math.random()*CITIES.length)];
+
+  const list=document.getElementById('fp-list');
+  const item=document.createElement('div');
+  item.className='fi';
+  item.style.borderColor=MOODS[mood].hex;
+  item.innerHTML=`<div class="fi-word">${word.toUpperCase()}</div><div class="fi-loc">${city.name}</div>`;
+  list.insertBefore(item,list.firstChild);
+  while(list.children.length>7)list.removeChild(list.lastChild);
+
+  totalSignals++;
+  document.getElementById('sig-count').textContent=totalSignals.toLocaleString();
+  document.getElementById('feed-cnt').textContent=totalSignals;
+
+  // Nudge scores
+  globalScores[mood]=Math.min(1,globalScores[mood]+.03);
+  Object.keys(globalScores).forEach(k=>{if(k!==mood)globalScores[k]=Math.max(0,globalScores[k]-.005);});
+
+  // Occasionally shift dominant
+  if(Math.random()<.15)setMood(mood);
+
+  if(audioOn)playMotif(mood);
+  pulseCityDot(city.name,mood);
+}
+
+function pulseCityDot(name,mood){
+  const cd=cityDots.find(d=>d.city.name===name);
+  if(cd){
+    cd.dot.material.color.set(MOODS[mood].hex);
+    cd.pulsing=true;
+    setTimeout(()=>{
+      cd.dot.material.color.set(MOODS[cd.city.mood].hex);
+      cd.pulsing=false;
+    },2000);
+  }
+}
+
+// ── AUDIO ENGINE (Interstellar-style) ──
+function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+
+  // Master compressor
+  const comp=audioCtx.createDynamicsCompressor();
+  comp.threshold.value=-16;comp.ratio.value=8;comp.attack.value=.003;comp.release.value=.25;
+  comp.connect(audioCtx.destination);
+
+  // Reverb
+  const rev=audioCtx.createConvolver();
+  const len=audioCtx.sampleRate*5;
+  const buf=audioCtx.createBuffer(2,len,audioCtx.sampleRate);
+  for(let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch);
+    for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.8);
+  }
+  rev.buffer=buf;
+  rev.connect(comp);
+
+  // Master gain
+  const master=audioCtx.createGain();
+  master.gain.value=.55;
+  master.connect(rev);
+  master.connect(comp);// dry signal
+  audioCtx.userData={master,rev,comp};
+
+  startOrganDrone(currentMood);
+}
+
+function hexToFreq(semitones,base){
+  return base*Math.pow(2,semitones/12);
+}
+
+function startOrganDrone(mood){
+  stopDrone();
+  const m=MOODS[mood];
+  const now=audioCtx.currentTime;
+  const master=audioCtx.userData.master;
+
+  // Pipe organ: multiple harmonics with slow swell
+  [0,1,2,4].forEach((octave,oi)=>{
+    const freq=m.freq*Math.pow(2,octave-1);
+    m.organ.forEach((semi,si)=>{
+      const osc=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+
+      osc.type=['sine','sawtooth','triangle','sine'][si%4];
+      osc.frequency.value=hexToFreq(semi,freq);
+
+      // Detune slightly for richness
+      osc.detune.value=(Math.random()-.5)*6;
+
+      // Organ amplitude envelope — slow attack
+      g.gain.setValueAtTime(0,now);
+      g.gain.linearRampToValueAtTime(
+        (.22-oi*.04-si*.02)*Math.max(.2,1-oi*.25),
+        now+4+oi*1.5
+      );
+
+      // LFO tremolo
+      const lfo=audioCtx.createOscillator();
+      const lfoG=audioCtx.createGain();
+      lfo.frequency.value=.08+si*.02;
+      lfoG.gain.value=.012;
+      lfo.connect(lfoG);
+      lfoG.connect(g.gain);
+      lfo.start(now);
+
+      osc.connect(g);
+      g.connect(master);
+      osc.start(now);
+      droneNodes.push(osc,lfo,g);
+    });
+  });
+
+  // Sub bass (very low, Zimmer-style)
+  const sub=audioCtx.createOscillator();
+  const subG=audioCtx.createGain();
+  const subFilter=audioCtx.createBiquadFilter();
+  sub.type='sine';
+  sub.frequency.value=m.freq*.25;
+  subFilter.type='lowpass';
+  subFilter.frequency.value=80;
+  subG.gain.setValueAtTime(0,now);
+  subG.gain.linearRampToValueAtTime(.4,now+6);
+  sub.connect(subFilter);
+  subFilter.connect(subG);
+  subG.connect(master);
+  sub.start(now);
+  droneNodes.push(sub,subG,subFilter);
+}
+
+function stopDrone(){
+  droneNodes.forEach(n=>{
+    try{
+      const now=audioCtx.currentTime;
+      if(n.gain){n.gain.setTargetAtTime(0,now,.5);}
+      if(n.stop)setTimeout(()=>{try{n.stop();}catch(e){}},2500);
+    }catch(e){}
+  });
+  droneNodes=[];
+}
+
+function shiftOrgan(mood){
+  if(!audioCtx||!audioOn)return;
+  stopDrone();
+  startOrganDrone(mood);
+}
+
+function playMotif(mood){
+  if(!audioCtx||!audioOn)return;
+  const m=MOODS[mood];
+  const master=audioCtx.userData.master;
+  const now=audioCtx.currentTime;
+  const notes=[0,2,4].map(i=>m.organ[i%m.organ.length]);
+  notes.forEach((semi,i)=>{
+    const osc=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    osc.type='sine';
+    osc.frequency.value=hexToFreq(semi,m.freq*2);
+    const t=now+i*.18;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(.06,t+.05);
+    g.gain.exponentialRampToValueAtTime(.001,t+1.5);
+    osc.connect(g);g.connect(master);
+    osc.start(t);osc.stop(t+1.5);
+  });
+}
+
+function playClick(){
+  if(!audioCtx)return;
+  const master=audioCtx.userData.master;
+  const now=audioCtx.currentTime;
+  // Impact thud
+  const osc=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  osc.type='sine';
+  osc.frequency.setValueAtTime(60,now);
+  osc.frequency.exponentialRampToValueAtTime(25,now+.3);
+  g.gain.setValueAtTime(.3,now);
+  g.gain.exponentialRampToValueAtTime(.001,now+.4);
+  osc.connect(g);g.connect(master);
+  osc.start(now);osc.stop(now+.4);
+}
+
+function toggleAudio(){
+  const btn=document.getElementById('audio-btn');
+  const viz=document.getElementById('viz');
+  if(!audioOn){
+    initAudio();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    audioOn=true;
+    btn.classList.add('on');
+    viz.classList.add('on');
+    startVizAnimation();
+  } else {
+    audioOn=false;
+    btn.classList.remove('on');
+    viz.classList.remove('on');
+    stopVizAnimation();
+    stopDrone();
+    if(audioCtx){audioCtx.suspend();}
+  }
+}
+
+function startVizAnimation(){
+  const bars=document.querySelectorAll('.vb');
+  vizInterval=setInterval(()=>{
+    bars.forEach(b=>{
+      const h=Math.random()*24+4;
+      b.style.height=h+'px';
+    });
+  },120);
+}
+function stopVizAnimation(){
+  clearInterval(vizInterval);
+  document.querySelectorAll('.vb').forEach(b=>b.style.height='2px');
+}
+
+// ── MOOD SUBMISSION ──
+async function submitMood(){
+  const word=document.getElementById('mood-in').value.trim();
+  if(!word)return;
+
+  const ov=document.getElementById('overlay');
+  document.getElementById('ov-mood').textContent=word.toUpperCase();
+  document.getElementById('ov-ref').textContent='';
+  document.getElementById('ov-wait').textContent='Reading your signal…';
+  ov.classList.add('on');
+
+  document.getElementById('mood-in').value='';
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':''},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:200,
+        messages:[{role:'user',content:`Classify the emotional word "${word}" into exactly one of these moods: joy, love, hope, calm, sad, anxious, angry, numb, excited, grateful. Then write a 2-sentence poetic reflection inspired by this word — cosmic, cinematic, Hans Zimmer Interstellar-style. Respond ONLY with valid JSON: {"mood":"<mood>","reflection":"<two sentences>."}`}]
+      })
+    });
+
+    if(resp.ok){
+      const data=await resp.json();
+      const text=data.content[0].text;
+      const json=JSON.parse(text.replace(/```json|```/g,'').trim());
+      document.getElementById('ov-mood').textContent=json.mood.toUpperCase();
+      document.getElementById('ov-mood').style.color=MOODS[json.mood]?.hex||'#fff';
+      document.getElementById('ov-mood').style.textShadow=`0 0 80px ${MOODS[json.mood]?.glow||'rgba(255,255,255,.4)'}`;
+      document.getElementById('ov-ref').textContent=json.reflection;
+      document.getElementById('ov-wait').textContent='';
+      setMood(json.mood);
+    } else throw new Error('API error');
+  } catch(e){
+    // Fallback
+    const fallback=classifyFallback(word);
+    document.getElementById('ov-mood').textContent=fallback.mood.toUpperCase();
+    document.getElementById('ov-mood').style.color=MOODS[fallback.mood].hex;
+    document.getElementById('ov-mood').style.textShadow=`0 0 80px ${MOODS[fallback.mood].glow}`;
+    document.getElementById('ov-ref').textContent=fallback.reflection;
+    document.getElementById('ov-wait').textContent='';
+    setMood(fallback.mood);
+  }
+}
+
+const FALLBACK={
+  joy:{reflection:'The light inside you bends time — this moment will remember itself. Stars are just joy that learned to shine from very far away.'},
+  love:{reflection:'In the vast silence between galaxies, love is the only signal that travels faster than light. You carry a universe in the place where you feel this.'},
+  hope:{reflection:'Every horizon is a promise the earth makes to the sky every single morning. What you carry forward rewrites the laws of what is possible.'},
+  calm:{reflection:'At the center of the storm there is always this: a stillness older than wind. You have found the frequency at which the universe rests.'},
+  sad:{reflection:'Even supernovas end in a brightness the cosmos does not forget. Your heaviness is the proof that something beautiful was here.'},
+  anxious:{reflection:'The signal trembles but it is still a signal — still yours, still reaching. Even interference has a pattern, and yours is trying to say something true.'},
+  angry:{reflection:'Fire is how the earth clears space for what comes next. What burns in you is not destruction — it is the heat of an old truth refusing to be quiet.'},
+  numb:{reflection:'Silence is not the absence of music; it is where the score breathes. Even the void between stars is full of something waiting to be named.'},
+  excited:{reflection:'You are moving at the speed at which futures become presents. The universe lit up the moment you arrived at this frequency.'},
+  grateful:{reflection:'To be grateful is to become a lens that gathers light from everywhere. You are proof that something extraordinary happened, and knew it.'},
+};
+
+function classifyFallback(word){
+  const w=word.toLowerCase();
+  const map={
+    joy:['happy','bright','light','glow','sun','joy','smile','laugh','warm','radiant'],
+    love:['love','heart','tender','affection','care','embrace','adore','devoted'],
+    hope:['hope','future','possible','rising','dream','aspire','believe','forward'],
+    calm:['calm','peace','quiet','still','serene','tranquil','gentle','soft'],
+    sad:['sad','grief','loss','heavy','blue','tears','mourn','lonely','hurt'],
+    anxious:['anxious','worry','fear','stress','tense','nervous','uneasy','dread'],
+    angry:['angry','rage','furious','mad','fire','burning','fierce','defiant'],
+    numb:['numb','void','empty','blank','hollow','absent','disconnected','grey'],
+    excited:['excited','electric','vibrant','alive','energy','surge','wild'],
+    grateful:['grateful','thankful','blessed','grace','appreciate','humble'],
+  };
+  for(const[mood,keys]of Object.entries(map)){
+    if(keys.some(k=>w.includes(k)))return{mood,reflection:FALLBACK[mood].reflection};
+  }
+  return{mood:'calm',reflection:FALLBACK.calm.reflection};
+}
+
+function closeOverlay(){
+  document.getElementById('overlay').classList.remove('on');
+}
+
+// ── CUSTOM CURSOR ──
+function updateCursor(){
+  cursorX+=(cursorTargetX-cursorX)*.15;
+  cursorY+=(cursorTargetY-cursorY)*.15;
+  const c=document.getElementById('cursor');
+  const d=document.getElementById('cursor-dot');
+  c.style.left=cursorX+'px';
+  c.style.top=cursorY+'px';
+  d.style.left=cursorTargetX+'px';
+  d.style.top=cursorTargetY+'px';
+}
+
+// ── MAIN RENDER LOOP ──
+function animate(){
+  requestAnimationFrame(animate);
+  animFrame++;
+
+  // Cursor
+  updateCursor();
+
+  // Globe rotation
+  if(autoRotate){
+    targetRotY+=autoRotateSpeed;
+  }
+  rotX+=(targetRotX-rotX)*.04;
+  rotY+=(targetRotY-rotY)*.04;
+
+  if(earthMesh){
+    earthMesh.rotation.x=rotX;
+    earthMesh.rotation.y=rotY;
+    glowMesh.rotation.x=rotX;
+    glowMesh.rotation.y=rotY;
+
+    // Cloud drift
+    earthMesh.material.uniforms.cloudOffset.value=animFrame*.00008;
+  }
+
+  // City dot pulse
+  cityDots.forEach(cd=>{
+    cd.phase+=.04;
+    const scale=1+Math.sin(cd.phase)*.3;
+    cd.ring.material.opacity=.2+Math.sin(cd.phase)*.15;
+    cd.ring.scale.setScalar(scale);
+
+    // Pulse city dot with globe rotation
+    const p=latLngToVec3(cd.city.lat,cd.city.lng,1.005);
+    const rotMat=new THREE.Matrix4().makeRotationX(rotX).multiply(new THREE.Matrix4().makeRotationY(rotY));
+    p.applyMatrix4(rotMat);
+    cd.dot.position.copy(p);
+    cd.ring.position.copy(p);
+    cd.ring.lookAt(camera.position);
+  });
+
+  // Aurora flicker
+  if(scene.userData.aurora){
+    scene.userData.aurora.material.opacity=.4+Math.sin(animFrame*.02)*.1;
+    scene.userData.aurora.rotation.y+=.001;
+  }
+
+  // Star slow rotation
+  if(starField)starField.rotation.y+=.00005;
+
+  renderer.render(scene,camera);
+}
+
+// ── RESIZE ──
+function onResize(){
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeOverlay();
+  if(e.key==='Enter')submitMood();
+});
+
+// ── BOOT ──
+async function boot(){
+  const bar=document.getElementById('ld-bar');
+  const pct=document.getElementById('ld-pct');
+
+  function progress(p){
+    bar.style.width=p+'%';
+    pct.textContent=Math.round(p)+'%';
+  }
+
+  progress(10);initThree();
+  progress(25);buildStars();
+  progress(35);buildNebula();
+  progress(50);buildGlobe();
+  progress(65);buildLights();
+  progress(78);buildCityDots();
+  progress(88);buildMoodAurora();
+  progress(95);
+
+  // Events
+  const gl=document.getElementById('gl');
+  gl.addEventListener('mousemove',onMouseMove);
+  gl.addEventListener('mousedown',onMouseDown);
+  gl.addEventListener('mouseup',onMouseUp);
+  gl.addEventListener('wheel',onWheel,{passive:false});
+  window.addEventListener('resize',onResize);
+
+  // Touch
+  let lastTouchDist=0;
+  gl.addEventListener('touchstart',e=>{
+    if(e.touches.length===2){
+      lastTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    } else if(e.touches.length===1){
+      mouseDown=true;dragDist=0;
+      dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+    }
+  });
+  gl.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(e.touches.length===2){
+      const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      const delta=lastTouchDist/dist;
+      camera.position.z=Math.max(1.5,Math.min(6,camera.position.z*delta));
+      lastTouchDist=dist;
+    } else if(e.touches.length===1){
+      const dx=e.touches[0].clientX-dragStart.x;
+      const dy=e.touches[0].clientY-dragStart.y;
+      targetRotY+=dx*.004;
+      targetRotX+=dy*.003;
+      dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+      autoRotate=false;
+    }
+  },{passive:false});
+  gl.addEventListener('touchend',()=>{mouseDown=false;setTimeout(()=>autoRotate=true,6000);});
+
+  // UI events
+  document.getElementById('mood-in').addEventListener('keydown',e=>{
+    if(e.key==='Enter')submitMood();
+  });
+
+  // Cursor tracking on UI
+  document.addEventListener('mousemove',e=>{
+    cursorTargetX=e.clientX;
+    cursorTargetY=e.clientY;
+  });
+
+  document.querySelectorAll('button,input,.fi').forEach(el=>{
+    el.addEventListener('mouseenter',()=>document.getElementById('cursor').classList.add('hovering'));
+    el.addEventListener('mouseleave',()=>document.getElementById('cursor').classList.remove('hovering'));
+  });
+
+  renderBars();
+  setMood('calm');
+
+  // Start animation
+  animate();
+
+  progress(100);
+  await new Promise(r=>setTimeout(r,800));
+
+  // Hide loader
+  const loader=document.getElementById('loader');
+  loader.classList.add('gone');
+  setTimeout(()=>loader.remove(),1600);
+
+  // Start live feed
+  setInterval(addFeed,4200);
+  // Chord swells
+  setInterval(()=>{if(audioOn)playMotif(currentMood);},12000);
+}
+
+window.addEventListener('load',boot);
+</script>
 </body>
 </html>
